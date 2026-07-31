@@ -209,6 +209,8 @@ return 0};
 
 })();
 squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book, "chapter", ch, "verse", first_verse_idx3, "verses", verses2);
+bible_db.settings.put({"keyName": "lastBook", "value": book});
+bible_db.settings.put({"keyName": "lastChapter", "value": String(ch)});
 squint_core.println("Displaying", book, ch, "-", squint_core.count(verses2), "entries (first verse idx:", first_verse_idx3, ")");
 return restore_verse_pos_BANG_(book, ch);
 } else {
