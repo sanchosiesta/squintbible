@@ -688,21 +688,26 @@ return ["div", ({"style": "position: fixed; bottom: 0; left: 0; right: 0; backgr
 var render_ui = function () {
 const el1 = document.getElementById("app");
 if (squint_core.truth_(el1)) {
+const scroll_y2 = window.scrollY;
 el1.innerHTML = "";
 rg.render(el1, ["div", render_navbar(), render_search_bar(), ["div", ({"style": "margin-top: 8px; padding: 0 8px 60px 8px; overflow-y: auto; height: calc(100vh - 200px);"}), render_verses()], render_progress_overlay(), render_status_bar()]);
+setTimeout((function () {
+return window.scrollTo(0, scroll_y2);
+
+}), 0);
 return setTimeout((function () {
-const book_sel2 = document.querySelector("select");
-if (squint_core.truth_(book_sel2)) {
-book_sel2.value = squint_core.get(squint_core.deref(app_state), "book")};
-const sels3 = document.querySelectorAll("select");
+const book_sel3 = document.querySelector("select");
+if (squint_core.truth_(book_sel3)) {
+book_sel3.value = squint_core.get(squint_core.deref(app_state), "book")};
+const sels4 = document.querySelectorAll("select");
 if (squint_core.truth_((() => {
-const and__23718__auto__4 = sels3;
-if (squint_core.truth_(and__23718__auto__4)) {
-return (sels3.length >= 2)} else {
-return and__23718__auto__4};
+const and__23718__auto__5 = sels4;
+if (squint_core.truth_(and__23718__auto__5)) {
+return (sels4.length >= 2)} else {
+return and__23718__auto__5};
 
 })())) {
-return sels3[1].value = `${squint_core.get(squint_core.deref(app_state), "chapter")??''}`;
+return sels4[1].value = `${squint_core.get(squint_core.deref(app_state), "chapter")??''}`;
 };
 
 }), 50);

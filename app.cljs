@@ -630,24 +630,27 @@
 (defn render-ui []
   (let [el (.getElementById js/document "app")]
     (when el
-      (set! (.-innerHTML el) "")
-      (rg/render el
-        [:div
-         (render-navbar)
-         (render-search-bar)
-         [:div {:style "margin-top: 8px; padding: 0 8px 60px 8px; overflow-y: auto; height: calc(100vh - 200px);"}
-          (render-verses)]
-         (render-progress-overlay)
-         (render-status-bar)])
-      ;; BUG 1 FIX: Sync select .value after reagami render with a short delay.
-      ;; reagami sets the HTML value attribute, but the browser only respects
-      ;; the .value property on <select> after re-render. setTimeout ensures DOM is ready.
-      (js/setTimeout (fn []
-        (let [book-sel (.querySelector js/document "select")]
-          (when book-sel (set! (.-value book-sel) (:book @app-state))))
-        (let [sels (.querySelectorAll js/document "select")]
-          (when (and sels (>= (.-length sels) 2))
-            (set! (.-value (aget sels 1)) (str (:chapter @app-state)))))) 50))))
+      (let [scroll-y (.-scrollY js/window)]
+        (set! (.-innerHTML el) "")
+        (rg/render el
+          [:div
+           (render-navbar)
+           (render-search-bar)
+           [:div {:style "margin-top: 8px; padding: 0 8px 60px 8px; overflow-y: auto; height: calc(100vh - 200px);"}
+            (render-verses)]
+           (render-progress-overlay)
+           (render-status-bar)])
+        ;; Restore scroll position after DOM is rebuilt
+        (js/setTimeout #(js/window.scrollTo 0 scroll-y) 0)
+        ;; BUG 1 FIX: Sync select .value after reagami render with a short delay.
+        ;; reagami sets the HTML value attribute, but the browser only respects
+        ;; the .value property on <select> after re-render. setTimeout ensures DOM is ready.
+        (js/setTimeout (fn []
+          (let [book-sel (.querySelector js/document "select")]
+            (when book-sel (set! (.-value book-sel) (:book @app-state))))
+          (let [sels (.querySelectorAll js/document "select")]
+            (when (and sels (>= (.-length sels) 2))
+              (set! (.-value (aget sels 1)) (str (:chapter @app-state)))))) 50)))))
 
 ;; ── Force re-render ──
 (defn rerender! []
