@@ -74,6 +74,16 @@
     (.replace s (js/RegExp. "\\*[a-z]+" "g") "")
     s))
 
+;; ── Text-to-speech: read current verse aloud ──
+(defn read-verse! []
+  (let [verses (:verses @app-state)
+        idx (:verse @app-state)]
+    (when (and (seq verses) (>= idx 0) (< idx (count verses)))
+      (let [text (:t (nth verses idx))]
+        (.cancel js/speechSynthesis)
+        (let [utterance (new js/SpeechSynthesisUtterance text)]
+          (.speak js/speechSynthesis utterance))))))
+
 ;; ── Helper: get book index ──
 (defn book-index [book]
   (let [idx (.indexOf books-list book)]
@@ -425,6 +435,9 @@
                   :onclick (fn [_] (change-font-size! 2))
                   :title "Increase font"}
          "A+"]]
+       ;; Speaker button
+       [:div {:class "navbar-item" :style "padding: 4px;"}
+        [:button {:class "button is-small is-light" :onclick (fn [_] (read-verse!)) :title "Read verse aloud (R)"} "Speaker"]]
        ;; Search button
        [:div {:class "navbar-item" :style "padding: 4px;"}
         [:button {:class "button is-small is-info"
@@ -521,6 +534,8 @@
           (= key "j") (do (.preventDefault e) (next-verse!))
           ;; k - previous verse
           (= key "k") (do (.preventDefault e) (prev-verse!))
+          ;; R - read verse aloud
+          (= key "R") (do (.preventDefault e) (read-verse!))
           ;; h - previous chapter
           (= key "h") (do (.preventDefault e) (prev-chapter!))
           ;; l - next chapter
