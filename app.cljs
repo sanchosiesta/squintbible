@@ -10,6 +10,11 @@
   (set! (.-href link) "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css")
   (.appendChild (.-head js/document) link))
 
+;; ── Custom Styles ──
+(let [style (.createElement js/document "style")]
+  (set! (.-textContent style) ".verse-current { background: #e3edf7 !important; border-left: 3px solid #3498db; }")
+  (.appendChild (.-head js/document) style))
+
 ;; ── Books & Chapter Counts ──
 (def books-list
   ["Genesis" "Exodus" "Leviticus" "Numbers" "Deuteronomy" "Joshua" "Judges" "Ruth"
@@ -102,6 +107,26 @@
                                 (println "Loaded" book (count entries) "chapters")))))))
         (.catch (fn [err] (js/console.error "Failed to load" book err))))))
 
+;; ── Save/restore verse position ──
+(defn save-verse-pos! []
+  (let [{:keys [book chapter verse]} @app-state]
+    (let [key (str "pos:" book ":" chapter)]
+      (.put (.-settings bible-db) (clj->js {:keyName key :value (str verse)})))))
+
+(defn restore-verse-pos! [book ch]
+  (let [key (str "pos:" book ":" ch)]
+    (-> (.get (.-settings bible-db) key)
+        (.then (fn [row]
+                 (when row
+                   (let [verse-idx (js/parseInt (.-value row) 10)
+                         verses (:verses @app-state)]
+                     (when (and (seq verses) (>= verse-idx 0) (< verse-idx (count verses)))
+                       (swap! app-state assoc :verse verse-idx)
+                       (let [verse-num (:v (nth verses verse-idx))
+                             el (.getElementById js/document (str "v" verse-num))]
+                         (when el (.scrollIntoView el #js {:behavior "smooth" :block "center"})))
+                       (println "Restored verse position:" book ch "verse" verse-idx)))))))))
+
 ;; ── Load highlights from Dexie ──
 (defn load-highlights! []
   (-> (.toArray (.-highlights bible-db))
@@ -134,7 +159,8 @@
                    (let [verses (js->clj (.-verses row) :keywordize-keys true)]
                      (swap! app-state assoc
                             :book book :chapter ch :verse 0 :verses verses)
-                     (println "Displaying" book ch "-" (count verses) "entries"))
+                     (println "Displaying" book ch "-" (count verses) "entries")
+                     (restore-verse-pos! book ch))
                    (do (println "Chapter not found in DB, loading book first...")
                        (-> (load-book! book)
                            (.then (fn [] (load-chapter! book ch)))))))))))
@@ -155,12 +181,14 @@
   (let [idx (:verse @app-state)
         cnt (count (:verses @app-state))]
     (when (< (inc idx) cnt)
-      (goto-verse! (inc idx)))))
+      (goto-verse! (inc idx))
+      (save-verse-pos!))))
 
 (defn prev-verse! []
   (let [idx (:verse @app-state)]
     (when (> idx 0)
-      (goto-verse! (dec idx)))))
+      (goto-verse! (dec idx))
+      (save-verse-pos!))))
 
 ;; ── Navigate chapters ──
 (defn goto-chapter! [ch]
@@ -309,18 +337,20 @@
                      (load-next to-load))))))))
 
 ;; ── Render: verse row ──
-(defn render-verse-row [v idx font-size highlights book chapter]
+(defn render-verse-row [v idx font-size highlights book chapter current-verse-num]
   (let [verse-num (:v v)
         text (:t v)
         is-heading (> (:h v) 0)
         ref (str book ":" chapter ":" verse-num)
-        highlighted (contains? highlights ref)]
+        highlighted (contains? highlights ref)
+        is-current (= verse-num current-verse-num)]
     (if is-heading
       [:div {:style "padding: 8px 16px; margin-top: 4px;"
              :class "has-text-weight-bold has-text-centered is-size-5"}
        text]
       [:div {:id (str "v" verse-num)
              :onclick (fn [_] (toggle-highlight! verse-num))
+             :class (when is-current "verse-current")
              :style (str "display: flex; padding: 4px 8px; cursor: pointer; border-bottom: 1px solid #eee;"
                          (when highlighted "background-color: #fff3a8;"))}
        [:div {:style (str "color: #aaa; text-align: right; min-width: 48px; padding-right: 12px; font-size: " (- font-size 2) "px; user-select: none;")}
@@ -330,12 +360,14 @@
 
 ;; ── Render: verse list ──
 (defn render-verses []
-  (let [{:keys [verses font-size highlights book chapter]} @app-state]
+  (let [{:keys [verses font-size highlights book chapter verse]} @app-state
+        current-verse-num (when (and (seq verses) (>= verse 0) (< verse (count verses)))
+                            (:v (nth verses verse)))]
     (if (empty? verses)
       [:div {:class "notification is-info"} "Loading..."]
       (into [:div]
             (map-indexed (fn [idx v]
-                           (render-verse-row v idx font-size highlights book chapter))
+                           (render-verse-row v idx font-size highlights book chapter current-verse-num))
                          verses)))))
 
 ;; ── Render: Navbar ──
@@ -493,6 +525,59 @@
           (= key "N") (do (.preventDefault e) (search-prev!))
           ;; G / Shift+G
           (= key "G") (do (.preventDefault e) (goto-bottom!))
+          ;; z - start of z-command sequence (zz, zt, zb)
+          (= key "z") (do
+                        (.preventDefault e)
+                        (let [now (.now js/Date)]
+                          (if-let [last-z (.-_lastZKey js/window)]
+                            ;; Second 'z' → zz: scroll current verse to center
+                            (do
+                              (when (< (- now last-z) 500)
+                                (let [v (:verse @app-state)
+                                      verses (:verses @app-state)
+                                      verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
+                                                  (:v (nth verses v)))
+                                      el (when verse-num (.getElementById js/document (str "v" verse-num)))]
+                                  (when el (.scrollIntoView el #js {:behavior "smooth" :block "center"}))))
+                              (set! (.-_lastZKey js/window) 0))
+                            ;; First 'z': start timer; default single-z = zt (scroll to top)
+                            (do
+                              (set! (.-_lastZKey js/window) now)
+                              (js/setTimeout
+                                (fn []
+                                  (when (= (.-_lastZKey js/window) now)
+                                    (let [v (:verse @app-state)
+                                          verses (:verses @app-state)
+                                          verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
+                                                      (:v (nth verses v)))
+                                          el (when verse-num (.getElementById js/document (str "v" verse-num)))]
+                                      (when el (.scrollIntoView el #js {:behavior "smooth" :block "start"})))
+                                    (set! (.-_lastZKey js/window) 0)))
+                                500)))))
+          ;; t after z → zt: scroll current verse to top
+          (= key "t") (when-let [last-z (.-_lastZKey js/window)]
+                        (when (< (- (.now js/Date) last-z) 500)
+                          (.preventDefault e)
+                          (let [v (:verse @app-state)
+                                verses (:verses @app-state)
+                                verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
+                                            (:v (nth verses v)))
+                                el (when verse-num (.getElementById js/document (str "v" verse-num)))]
+                            (when el (.scrollIntoView el #js {:behavior "smooth" :block "start"})))
+                          (set! (.-_lastZKey js/window) 0)
+                          true))
+          ;; b after z → zb: scroll current verse to bottom
+          (= key "b") (when-let [last-z (.-_lastZKey js/window)]
+                        (when (< (- (.now js/Date) last-z) 500)
+                          (.preventDefault e)
+                          (let [v (:verse @app-state)
+                                verses (:verses @app-state)
+                                verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
+                                            (:v (nth verses v)))
+                                el (when verse-num (.getElementById js/document (str "v" verse-num)))]
+                            (when el (.scrollIntoView el #js {:behavior "smooth" :block "end"})))
+                          (set! (.-_lastZKey js/window) 0)
+                          true))
           ;; g - start of gg sequence
           (= key "g") (do
                         (.preventDefault e)
