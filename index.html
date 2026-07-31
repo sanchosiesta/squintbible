@@ -1,948 +1,983 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NASB Bible Reader</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
-<link rel="preconnect" href="https://rsms.me/">
-<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
-<script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NASB Bible</title>
 <script type="importmap">
-  { "imports": { "squint-cljs/": "https://unpkg.com/squint-cljs/" } }
+{ "imports": { "squint-cljs/": "https://unpkg.com/squint-cljs/" } }
 </script>
 <style>
-  :root { --bulma-body-size: 14px; }
-  body { height: 100vh; overflow: hidden; background: #f5f5f5; font-family: JuliaMono, monospace; }
-  #app { max-width: 860px; margin: 0 auto; background: #faf9f6; box-shadow: 0 0 40px rgba(0,0,0,0.08); }
-  @font-face { font-family: 'JuliaMono'; src: url('https://cdn.jsdelivr.net/gh/cormullion/juliamono/webfonts/JuliaMono-Light.woff2') format('woff2'); font-weight: 300; font-style: normal; }
-  @font-face { font-family: 'JuliaMono'; src: url('https://cdn.jsdelivr.net/gh/cormullion/juliamono/webfonts/JuliaMono-LightItalic.woff2') format('woff2'); font-weight: 300; font-style: italic; }
-  @font-face { font-family: 'JuliaMono'; src: url('https://cdn.jsdelivr.net/gh/cormullion/juliamono/webfonts/JuliaMono-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; }
-  @font-face { font-family: 'JuliaMono'; src: url('https://cdn.jsdelivr.net/gh/cormullion/juliamono/webfonts/JuliaMono-RegularItalic.woff2') format('woff2'); font-weight: 400; font-style: italic; }
-  @font-face { font-family: 'JuliaMono'; src: url('https://cdn.jsdelivr.net/gh/cormullion/juliamono/webfonts/JuliaMono-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; }
-  @font-face { font-family: 'JuliaMono'; src: url('https://cdn.jsdelivr.net/gh/cormullion/juliamono/webfonts/JuliaMono-BoldItalic.woff2') format('woff2'); font-weight: 700; font-style: italic; }
-  .node-row { display: flex; align-items: center; cursor: pointer; padding: 3px 12px; border-left: 3px solid transparent; min-height: 30px; }
-  .node-row:hover { background: rgba(0,0,0,0.03); }
-  .node-row.focused { background: rgba(26,111,196,0.06); border-left-color: #1a6fc4; }
-  .bullet { width: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 12px; user-select: none; }
-  .bullet.expanded::before { content: '\25BE'; color: #666; }
-  .bullet.collapsed::before { content: '\25B8'; color: #999; }
-  .bullet.leaf::before { content: '\2022'; color: #bbb; }
-  .bullet.completed::before { content: '\2713'; color: #4caf50; }
-  .text-node { flex: 1; outline: none; white-space: pre-wrap; word-break: break-word; padding: 2px 6px; border-radius: 3px; line-height: 1.5; }
-  .text-node.completed { text-decoration: line-through; color: #aaa; }
-  .text-node[contenteditable="true"] { background: rgba(26,111,196,0.04); cursor: text; border-radius: 4px; caret-color: #A0522D; }
-  .cursor-block { background: #ffb6c1; color: #fff; font-weight: 600; border-radius: 2px; }
-  .text-node b { font-weight: 700; color: #111; }
-  .text-node i { font-style: italic; }
-  .text-node u { text-decoration: underline; }
-  .text-node s { text-decoration: line-through; opacity: 0.6; }
-  .text-node code { background: rgba(0,0,0,0.06); padding: 2px 4px; border-radius: 3px; font-family: SF Mono,Consolas,monospace; font-size: 13px; color: #d32f2f; }
-  .text-node .verbatim { background: rgba(0,0,0,0.06); padding: 2px 4px; border-radius: 3px; font-family: SF Mono,Consolas,monospace; font-size: 13px; color: #1976d2; }
-  .text-node a { color: #1a6fc4; text-decoration: none; border-bottom: 1px solid #1a6fc4; }
-  .text-node a:hover { background: #e3f0ff; }
-  .help-section-title { font-weight: 600; margin: 12px 0 4px; color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .help-table { width: 100%; }
-  .help-table td { padding: 2px 8px; }
-  .help-table kbd { background: #f5f3ef; border: 1px solid #d5d0c8; padding: 2px 6px; border-radius: 4px; font-family: SF Mono,Consolas,monospace; font-size: 11px; }
-  .tree-container { flex: 1; overflow-y: auto; padding: 16px 0; }
+  body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;overflow:auto}
+  #app{min-height:100vh}
+  .verse-current{background:#e3edf7!important;border-left:3px solid #3498db}
+  .highlighted{background:#fff3a8!important}
+  .verse-current.highlighted{background:#c8e6c9!important;border-left:3px solid #2e7d32}
+  .search-hl{background:#e91e63;color:white;padding:0 2px;border-radius:2px}
 </style>
 </head>
 <body>
-<div id="app"></div>
-
-<script type="text/plain" id="squint-src">
-;; ── NASB Bible Reader ──
-;; Dependencies: Reagami (UI), Dexie (IndexedDB), Bulma (CSS)
-
-(require '["https://unpkg.com/dexie@3.2.4/dist/dexie.js" :as dexie])
-(require '["https://unpkg.com/reagami@0.1.37/reagami.mjs" :as rg])
-
-;; ── Bulma CSS ──
-(let [link (.createElement js/document "link")]
-  (set! (.-rel link) "stylesheet")
-  (set! (.-href link) "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css")
-  (.appendChild (.-head js/document) link))
-
-;; ── Custom Styles ──
-(let [style (.createElement js/document "style")]
-  (set! (.-textContent style)
-    (str "html, body { overflow: auto !important; height: 100%; }"
-         ".verse-current { background: #e3edf7 !important; border-left: 3px solid #3498db; }"
-         ".highlighted { background: #fff3a8 !important; }"
-         ".verse-current.highlighted { background: #c8e6c9 !important; border-left: 3px solid #2e7d32; }"
-         "mark { background: #ffb6c1; border-radius: 2px; padding: 0 1px; }"))
-  (.appendChild (.-head js/document) style))
-
-;; ── Books & Chapter Counts ──
-(def books-list
-  ["Genesis" "Exodus" "Leviticus" "Numbers" "Deuteronomy" "Joshua" "Judges" "Ruth"
-   "1 Samuel" "2 Samuel" "1 Kings" "2 Kings" "1 Chronicles" "2 Chronicles" "Ezra"
-   "Nehemiah" "Esther" "Job" "Psalm" "Proverbs" "Ecclesiastes" "Song of Solomon"
-   "Isaiah" "Jeremiah" "Lamentations" "Ezekiel" "Daniel" "Hosea" "Joel" "Amos"
-   "Obadiah" "Jonah" "Micah" "Nahum" "Habakkuk" "Zephaniah" "Haggai" "Zechariah"
-   "Malachi" "Matthew" "Mark" "Luke" "John" "Acts" "Romans" "1 Corinthians"
-   "2 Corinthians" "Galatians" "Ephesians" "Philippians" "Colossians"
-   "1 Thessalonians" "2 Thessalonians" "1 Timothy" "2 Timothy" "Titus" "Philemon"
-   "Hebrews" "James" "1 Peter" "2 Peter" "1 John" "2 John" "3 John" "Jude" "Revelation"])
-
-(def chapter-counts
-  {"Genesis" 50 "Exodus" 40 "Leviticus" 27 "Numbers" 36 "Deuteronomy" 34
-   "Joshua" 24 "Judges" 21 "Ruth" 4 "1 Samuel" 31 "2 Samuel" 24 "1 Kings" 22
-   "2 Kings" 25 "1 Chronicles" 29 "2 Chronicles" 36 "Ezra" 10 "Nehemiah" 13
-   "Esther" 10 "Job" 42 "Psalm" 150 "Proverbs" 31 "Ecclesiastes" 12
-   "Song of Solomon" 8 "Isaiah" 66 "Jeremiah" 52 "Lamentations" 5 "Ezekiel" 48
-   "Daniel" 12 "Hosea" 14 "Joel" 3 "Amos" 9 "Obadiah" 1 "Jonah" 4 "Micah" 7
-   "Nahum" 3 "Habakkuk" 3 "Zephaniah" 3 "Haggai" 2 "Zechariah" 14 "Malachi" 4
-   "Matthew" 28 "Mark" 16 "Luke" 24 "John" 21 "Acts" 28 "Romans" 16
-   "1 Corinthians" 16 "2 Corinthians" 13 "Galatians" 6 "Ephesians" 6
-   "Philippians" 4 "Colossians" 4 "1 Thessalonians" 5 "2 Thessalonians" 3
-   "1 Timothy" 6 "2 Timothy" 4 "Titus" 3 "Philemon" 1 "Hebrews" 13 "James" 5
-   "1 Peter" 5 "2 Peter" 3 "1 John" 5 "2 John" 1 "3 John" 1 "Jude" 1 "Revelation" 22})
-
-;; ── Database ──
-;; Dexie UMD exposes Dexie globally as js/Dexie
-(println "Dexie global:" (js* "typeof Dexie"))
-(def bible-db (new js/Dexie "BibleDB"))
-(.stores (.version bible-db 1)
-         (clj->js {:verses "&ref" :highlights "&verseRef" :settings "&keyName"}))
-
-;; ── App State ──
-(def app-state
-  (atom {:book "Genesis"
-         :chapter 1
-         :verse 0
-         :verses []
-         :font-size 18
-         :highlights #{}
-         :search-term ""
-         :search-results []
-         :search-idx -1
-         :loading false
-         :load-progress 0
-         :total-books 66
-         :count-loaded 0
-         :prev-book nil
-         :prev-chapter nil
-         :prev-verse nil}))
-
-;; ── Helper: filename for a book ──
-(defn book->filename [book]
-  (str "data/" (.replace book (js/RegExp. " " "g") "_") ".json"))
-
-;; ── Helper: clean display text (strip *p *i *ln *pn *bp *iln *s etc) ──
-(defn clean-text [s]
-  (if (string? s)
-    (.replace s (js/RegExp. "\\*[a-z]+" "g") "")
-
-;; ── Highlight search-term matches within text, returns hiccup ──
-(defn highlight-matches [text term]
-  "Wrap occurrences of term in text with <mark> tags, case-insensitive.
-   Returns text unchanged if no match, or a [:span ...] hiccup vector."
-  (if (or (empty? term) (not (string? text)))
-    text
-    (let [lo (.toLowerCase text)
-          lt (.toLowerCase term)
-          tl (count term)]
-      (loop [start 0
-             parts []]
-        (if (>= start (count text))
-          (if (== (count parts) 1) (first parts) (into [:span] parts))
-          (let [idx (.indexOf lo lt start)]
-            (if (neg? idx)
-              (recur (count text) (conj parts (.substring text start)))
-              (let [parts (if (> idx start)
-                            (conj parts (.substring text start idx))
-                            parts)
-                    parts (conj parts [:mark (.substring text idx (+ idx tl))])]
-                (recur (+ idx tl) parts)))))))))
-
-    s))
-
-;; ── Text-to-speech: read current verse aloud ──
-(defn read-verse! []
-  (let [verses (:verses @app-state)
-        idx (:verse @app-state)]
-    (when (and (seq verses) (>= idx 0) (< idx (count verses)))
-      (let [text (:t (nth verses idx))]
-        (.cancel js/speechSynthesis)
-        (let [utterance (new js/SpeechSynthesisUtterance text)]
-          (.speak js/speechSynthesis utterance))))))
-
-;; ── Helper: get book index ──
-(defn book-index [book]
-  (let [idx (.indexOf books-list book)]
-    (if (>= idx 0) idx 0)))
-
-;; ── Helper: get chapter count ──
-(defn get-chapter-count [book]
-  (get chapter-counts book 1))
-
-;; ── Load a single book's JSON, group by chapter, store in Dexie ──
-(defn load-book! [book]
-  (let [filename (book->filename book)]
-    (-> (js/fetch filename)
-        (.then (fn [resp]
-                 (if (.-ok resp)
-                   (.json resp)
-                   (throw (js/Error. (str "Failed to load " book ": HTTP " (.-status resp)))))))
-        (.then (fn [data]
-                 (let [arr data
-                       grouped (group-by :c arr)
-                       entries (map (fn [[ch verses]]
-                                      {:ref (str book ":" ch)
-                                       :book book
-                                       :chapter (int ch)
-                                       :verses (map (fn [v]
-                                                      {:v (int (:v v))
-                                                       :t (clean-text (:t v))
-                                                       :h (int (:h v))})
-                                                    verses)})
-                                    grouped)]
-                   (-> (.bulkPut (.-verses bible-db) (clj->js entries))
-                       (.then (fn []
-                                (swap! app-state update :count-loaded inc)
-                                (println "Loaded" book (count entries) "chapters")))))))
-        (.catch (fn [err] (js/console.error "Failed to load" book err))))))
-
-;; ── Save/restore verse position ──
-(defn save-verse-pos! []
-  (let [{:keys [book chapter verse]} @app-state]
-    (let [key (str "pos:" book ":" chapter)]
-      (.put (.-settings bible-db) (clj->js {:keyName key :value (str verse)})))))
-
-(defn restore-verse-pos! [book ch]
-  (let [key (str "pos:" book ":" ch)]
-    (-> (.get (.-settings bible-db) key)
-        (.then (fn [row]
-                 (when row
-                   (let [verse-idx (js/parseInt (.-value row) 10)
-                         verses (:verses @app-state)]
-                     (when (and (seq verses) (>= verse-idx 0) (< verse-idx (count verses)))
-                       (swap! app-state assoc :verse verse-idx)
-                       (let [verse-num (:v (nth verses verse-idx))
-                             el (.getElementById js/document (str "v" verse-num))]
-                         (when el (.scrollIntoView el #js {:behavior "smooth" :block "center"})))
-                       (println "Restored verse position:" book ch "verse" verse-idx)))))))))
-
-;; ── Load highlights from Dexie ──
-(defn load-highlights! []
-  (-> (.toArray (.-highlights bible-db))
-      (.then (fn [rows]
-               (let [hs (set (map #(.-verseRef %) rows))]
-                 (swap! app-state assoc :highlights hs)
-                 (println "Loaded" (count hs) "highlights"))))))
-
-;; ── Load settings from Dexie ──
-(defn load-settings! []
-  (-> (.toArray (.-settings bible-db))
-      (.then (fn [rows]
-               (doseq [row rows]
-                 (let [k (keyword (.-keyName row))
-                       v (.-value row)]
-                   (when (= k :font-size)
-                     (swap! app-state assoc :font-size (js/parseInt v 10)))))
-               (println "Settings loaded")))))
-
-;; ── Save a setting ──
-(defn save-setting! [k v]
-  (.put (.-settings bible-db) (clj->js {:keyName (name k) :value (str v)})))
-
-;; ── Load verses for a given book+chapter from Dexie ──
-(defn load-chapter! [book ch]
-  (let [ref (str book ":" ch)]
-    (-> (.get (.-verses bible-db) ref)
-        (.then (fn [row]
-                 (if row
-                   (let [verses (.-verses row)
-                         ;; BUG 2 FIX: find first non-heading verse (h=0) instead of always 0
-                         first-verse-idx (or (first (keep-indexed #(when (= (:h %2) 0) %1) verses)) 0)]
-                     (swap! app-state assoc
-                            :book book :chapter ch :verse first-verse-idx :verses verses)
-                     (println "Displaying" book ch "-" (count verses) "entries (first verse idx:" first-verse-idx ")")
-                     (restore-verse-pos! book ch))
-                   (do (println "Chapter not found in DB, loading book first...")
-                       (-> (load-book! book)
-                           (.then (fn [] (load-chapter! book ch)))))))))))
-
-;; ── Navigate to a verse ──
-(defn goto-verse! [idx]
-  (let [verses (:verses @app-state)
-        n (count verses)]
-    (when (> n 0)
-      (let [i (max 0 (min (dec n) idx))]
-        (swap! app-state assoc :verse i))
-      (let [verse-num (get-in @app-state [:verses (:verse @app-state) :v])
-            el (.getElementById js/document (str "v" verse-num))]
-        (when el (.scrollIntoView el #js {:behavior "smooth" :block "center"}))))))
-
-;; ── Next/previous verse ──
-(defn next-verse! []
-  (let [idx (:verse @app-state)
-        cnt (count (:verses @app-state))]
-    (when (< (inc idx) cnt)
-      (goto-verse! (inc idx))
-      (save-verse-pos!))))
-
-(defn prev-verse! []
-  (let [idx (:verse @app-state)]
-    (when (> idx 0)
-      (goto-verse! (dec idx))
-      (save-verse-pos!))))
-
-;; ── Navigate chapters ──
-(defn goto-chapter! [ch]
-  (let [book (:book @app-state)
-        max-ch (get-chapter-count book)]
-    (when (and (>= ch 1) (<= ch max-ch))
-      (swap! app-state assoc :chapter ch :verse 0 :verses [] :search-term "" :search-results [] :search-idx -1)
-      (load-chapter! book ch))))
-
-;; ── Goto book ──
-(defn goto-book! [book]
-  "Jump to a specific book at chapter 1. Resets search and verse position."
-  (when (contains? chapter-counts book)
-    (swap! app-state assoc :book book :chapter 1 :verse 0 :verses [] :search-term "" :search-results [] :search-idx -1)
-    (load-chapter! book 1)
-    (println "Switched to" book)))
-
-(defn next-chapter! []
-  (let [book (:book @app-state)
-        ch (:chapter @app-state)
-        max-ch (get-chapter-count book)]
-    (if (< ch max-ch)
-      (goto-chapter! (inc ch))
-      ;; wrap to next book
-      (let [bi (book-index book)]
-        (when (< (inc bi) (count books-list))
-          (let [next-book (nth books-list (inc bi))]
-            (swap! app-state assoc :book next-book)
-            (goto-chapter! 1)))))))
-
-(defn prev-chapter! []
-  (let [book (:book @app-state)
-        ch (:chapter @app-state)]
-    (if (> ch 1)
-      (goto-chapter! (dec ch))
-      ;; wrap to previous book
-      (let [bi (book-index book)]
-        (when (> bi 0)
-          (let [prev-book (nth books-list (dec bi))
-                max-ch (get-chapter-count prev-book)]
-            (swap! app-state assoc :book prev-book)
-            (goto-chapter! max-ch)))))))
-
-;; ── Scroll helpers ──
-(defn scroll-half-down! []
-  (.scrollBy js/window 0 (int (/ (.-innerHeight js/window) 2))))
-
-(defn scroll-half-up! []
-  (.scrollBy js/window 0 (int (/ (.-innerHeight js/window) -2))))
-
-(defn scroll-full-down! []
-  (.scrollBy js/window 0 (.-innerHeight js/window)))
-
-(defn scroll-full-up! []
-  (.scrollBy js/window 0 (- (.-innerHeight js/window))))
-
-;; ── Update current verse from viewport position ──
-(defn update-current-verse-from-viewport! []
-  (let [verse-els (.querySelectorAll js/document "[id^=v]")
-        viewport-center (/ (.-innerHeight js/window) 2)
-        closest (atom nil)
-        closest-dist (atom ##Inf)]
-    (dotimes [i (.-length verse-els)]
-      (let [el (.item verse-els i)
-            rect (.getBoundingClientRect el)
-            el-center (+ (.-top rect) (/ (.-height rect) 2))
-            dist (js/Math.abs (- el-center viewport-center))]
-        (when (< dist @closest-dist)
-          (reset! closest-dist dist)
-          (reset! closest el))))
-    (when-let [closest-el @closest]
-      (let [verse-num (js/parseInt (.substring (.-id closest-el) 1) 10)
-            verses (:verses @app-state)
-            idx (first (keep-indexed #(when (= (:v %2) verse-num) %1) verses))]
-        (when idx
-          (swap! app-state assoc :verse idx)
-          (save-verse-pos!))))))
-
-;; ── Go to top/bottom of chapter & specific verse ──
-(defn goto-top! []
-  "Jump to first non-heading verse (h=0) and scroll it to center of viewport."
-  (let [verses (:verses @app-state)]
-    (when (seq verses)
-      ;; BUG 4 FIX: skip heading verses, go to first non-heading verse
-      (let [first-non-heading (first (keep-indexed #(when (= (:h %2) 0) %1) verses))]
-        (goto-verse! (or first-non-heading 0))))))
-
-(defn goto-bottom! []
-  (let [verses (:verses @app-state)]
-    (when (seq verses)
-      (goto-verse! (dec (count verses))))))
-
-(defn goto-verse-num! [verse-num]
-  (let [verses (:verses @app-state)]
-    (if (seq verses)
-      (let [idx (first (keep-indexed
-                         (fn [i v] (when (= (:v v) verse-num) i))
-                         verses))]
-        (if idx
-          (do (goto-verse! idx)
-              (save-verse-pos!)
-              (println "Jumped to verse" verse-num))
-          (println "Verse" verse-num "not found in this chapter")))
-      (println "No verses loaded"))))
-
-;; ── Toggle verse position: % key swaps current ↔ previous verse position ──
-(defn toggle-verse-position! []
-  (let [{:keys [book chapter verse prev-book prev-chapter prev-verse]} @app-state]
-    (if (nil? prev-verse)
-      ;; First press: save current position as previous
-      (swap! app-state assoc
-             :prev-book book
-             :prev-chapter chapter
-             :prev-verse verse)
-      ;; Second press: swap current and previous
-      (let [temp-book book
-            temp-chapter chapter
-            temp-verse verse]
-        (swap! app-state assoc
-               :book prev-book
-               :chapter prev-chapter
-               :verse prev-verse
-               :verses []
-               :prev-book temp-book
-               :prev-chapter temp-chapter
-               :prev-verse temp-verse)
-        (load-chapter! prev-book prev-chapter)))))
-
-;; ── Toggle highlight on a verse ──
-(defn toggle-highlight! [verse-num]
-  (let [book (:book @app-state)
-        ch (:chapter @app-state)
-        ref (str book ":" ch ":" verse-num)
-        hs (:highlights @app-state)]
-    (if (contains? hs ref)
-      (do (.delete (.-highlights bible-db) ref)
-          (swap! app-state update :highlights disj ref))
-      (do (.put (.-highlights bible-db) (clj->js {:verseRef ref}))
-          (swap! app-state update :highlights conj ref)))))
-
-;; ── Font size ──
-(defn change-font-size! [delta]
-  (let [new-sz (+ (:font-size @app-state) delta)]
-    (when (and (>= new-sz 10) (<= new-sz 48))
-      (swap! app-state assoc :font-size new-sz)
-      (save-setting! :font-size new-sz))))
-
-;; ── Search ──
-(defn do-search! [term]
-  (let [term (or term "")
-        verses (:verses @app-state)]
-    (if (empty? term)
-      (swap! app-state assoc :search-term "" :search-results [] :search-idx -1)
-      (let [results (keep-indexed
-                      (fn [i v]
-                        (when (and (= (:h v) 0)
-                                   (>= (.indexOf (.toLowerCase (:t v))
-                                                 (.toLowerCase term)) 0))
-                          i))
-                      verses)]
-        (swap! app-state assoc
-               :search-term term
-               :search-results (vec results)
-               :search-idx (if (seq results) 0 -1))
-        (when (seq results)
-          (goto-verse! (first results)))))))
-
-(defn search-next! []
-  (let [results (:search-results @app-state)
-        idx (:search-idx @app-state)]
-    (when (seq results)
-      (let [new-idx (mod (inc idx) (count results))]
-        (swap! app-state assoc :search-idx new-idx)
-        (goto-verse! (nth results new-idx))))))
-
-(defn search-prev! []
-  (let [results (:search-results @app-state)
-        idx (:search-idx @app-state)]
-    (when (seq results)
-      (let [new-idx (mod (dec idx) (count results))]
-        (swap! app-state assoc :search-idx new-idx)
-        (goto-verse! (nth results new-idx))))))
-
-(defn clear-search! []
-  (swap! app-state assoc :search-term "" :search-results [] :search-idx -1))
-
-;; ── Load All Books ──
-(defn load-all! []
-  (swap! app-state assoc :loading true :load-progress 0 :count-loaded 0)
-  ;; First count how many are already cached
-  (-> (.toArray (.-verses bible-db))
-      (.then (fn [rows]
-               (let [cached (set (map #(.-book %) rows))
-                     to-load (filter #(not (contains? cached %)) books-list)
-                     total (count to-load)]
-                 (swap! app-state assoc :total-books total)
-                 (if (zero? total)
-                   (do (swap! app-state assoc :loading false :load-progress 100)
-                       (println "All books already cached!"))
-                   (let [load-next (fn load-next [remaining]
-                                     (if (empty? remaining)
-                                       (do (swap! app-state assoc :loading false :load-progress 100)
-                                           (println "All books loaded!"))
-                                       (let [book (first remaining)
-                                             pct (int (* 100 (/ (- total (count remaining)) (max 1 total))))]
-                                         (swap! app-state assoc :load-progress pct)
-                                         (-> (load-book! book)
-                                             (.then (fn []
-                                                      (swap! app-state update :load-progress
-                                                             (fn [_] (int (* 100 (/ (- total (count (rest remaining))) (max 1 total))))))
-                                                      (load-next (rest remaining))))
-                                             (.catch (fn [err]
-                                                       (js/console.error "Error loading" book err)
-                                                       (load-next (rest remaining))))))))]
-                     (load-next to-load))))))))
-
-;; ── Render: verse row ──
-(defn render-verse-row [v idx font-size highlights book chapter current-verse-num search-term]
-  (let [verse-num (:v v)
-        text (:t v)
-        is-heading (> (:h v) 0)
-        ref (str book ":" chapter ":" verse-num)
-        highlighted (contains? highlights ref)
-        is-current (= verse-num current-verse-num)]
-    (if is-heading
-      [:div {:style "padding: 8px 16px; margin-top: 4px;"
-             :class "has-text-weight-bold has-text-centered is-size-5"}
-       text]
-      [:div {:id (str "v" verse-num)
-             :onclick (fn [_] (toggle-highlight! verse-num))
-              :class (str (when is-current "verse-current") (when highlighted " highlighted"))
-             :style (str "display: flex; padding: 4px 8px; cursor: pointer; border-bottom: 1px solid #eee;"
-                         ())}
-       [:div {:style (str "color: #aaa; text-align: right; min-width: 48px; padding-right: 12px; font-size: " (- font-size 2) "px; user-select: none;")}
-        verse-num]
-       [:div {:style (str "font-size: " font-size "px; flex: 1;")}
-        (highlight-matches text search-term)]])))
-
-;; ── Render: verse list ──
-(defn render-verses []
-  (let [{:keys [verses font-size highlights book chapter verse]} @app-state
-        current-verse-num (when (and (seq verses) (>= verse 0) (< verse (count verses)))
-                            (:v (nth verses verse)))]
-    (if (empty? verses)
-      [:div {:class "notification is-info"} "Loading..."]
-      (into [:div]
-            (map-indexed (fn [idx v]
-                           (render-verse-row v idx font-size highlights book chapter current-verse-num))
-                         verses)))))
-
-;; ── Render: Navbar ──
-(defn render-navbar []
-  (let [{:keys [book chapter font-size]} @app-state
-        book-chapters (range 1 (inc (get-chapter-count book)))
-        ;; Shared button hiccups
-        font-minus-btn [:button {:class "button is-small is-light"
-                                 :onclick (fn [_] (change-font-size! -2))
-                                 :title "Decrease font"} "A-"]
-        font-plus-btn  [:button {:class "button is-small is-light"
-                                 :onclick (fn [_] (change-font-size! 2))
-                                 :title "Increase font"} "A+"]
-        speaker-btn    [:button {:class "button is-small is-light"
-                                 :onclick (fn [_] (read-verse!))
-                                 :title "Read verse aloud (R)"} "🔊"]
-        search-btn     [:button {:class "button is-small is-info"
-                                 :onclick (fn [_]
-                                            (let [input (.getElementById js/document "search-input")]
-                                              (when input (.focus input) (.select input))))}
-                        "🔍"]
-        load-book-btn  [:button {:class "button is-small is-primary"
-                                 :onclick (fn [_] (load-book! book))} "Load Book"]
-        load-all-btn   [:button {:class "button is-small is-warning"
-                                 :onclick (fn [_] (load-all!))} "Load All"]
-        ;; Helper: wrap button in navbar-item div
-        wrap-btn (fn [btn] [:div {:class "navbar-item" :style "padding: 4px;"} btn])
-        ;; Book select – use into for options
-        book-select [:div {:class "navbar-item" :style "padding: 4px;"}
-                     [:div {:class "select is-small"}
-                      (into [:select {:value book
-                                      :onchange (fn [e]
-                                                  (let [new-book (.. e -target -value)]
-                                                    (swap! app-state assoc :book new-book :chapter 1 :verse 0 :verses [] :search-term "" :search-results [] :search-idx -1)
-                                                    (load-chapter! new-book 1)))}]
-                            (mapv (fn [b] [:option {:value b :key b} b]) books-list))]]
-        ;; Chapter select – use into for options
-        chapter-select [:div {:class "navbar-item" :style "padding: 4px;"}
-                        [:div {:class "select is-small"}
-                         (into [:select {:value (str chapter)
-                                         :onchange (fn [e]
-                                                     (let [new-ch (js/parseInt (.. e -target -value) 10)]
-                                                       (goto-chapter! new-ch)))}]
-                               (mapv (fn [c] [:option {:value (str c) :key c} c]) book-chapters))]]
-        ;; Shared nav-brand
-        nav-brand [:div {:class "navbar-brand" :style "min-height: 48px;"}
-                   [:span {:class "navbar-item" :style "font-weight: bold; padding: 0 12px; height: 48px;"}
-                    "NASB"]]]
-    ;; Compose top-level div using into
-    (into
-     [:div]
-     [;; ── DESKTOP navbar: single row with all controls (hidden on touch) ──
-      [:nav {:class "navbar is-dark is-fixed-top is-hidden-touch"
-             :style "height: 48px; min-height: 48px;"}
-       nav-brand
-       [:div {:class "navbar-menu is-active" :style "height: 48px;"}
-        (into [:div {:class "navbar-start" :style "height: 48px; align-items: center;"}]
-              [book-select
-               chapter-select
-               (wrap-btn font-minus-btn)
-               (wrap-btn font-plus-btn)
-               (wrap-btn speaker-btn)
-               (wrap-btn search-btn)
-               (wrap-btn load-book-btn)
-               (wrap-btn load-all-btn)])]]
-      ;; ── MOBILE first navbar: book/chapter + Load Book/Load All ──
-      [:nav {:class "navbar is-dark is-hidden-desktop"
-             :style "height: 48px; min-height: 48px; position: fixed; top: 0; left: 0; right: 0; z-index: 31;"}
-       nav-brand
-       [:div {:class "navbar-menu is-active" :style "height: 48px;"}
-        (into [:div {:class "navbar-start" :style "height: 48px; align-items: center;"}]
-              [book-select
-               chapter-select
-               (wrap-btn load-book-btn)
-               (wrap-btn load-all-btn)])]]
-      ;; ── MOBILE second navbar: Font A-/A+/Speaker/Search (fixed below first) ──
-      [:nav {:class "navbar is-dark is-hidden-desktop"
-             :style "height: 48px; min-height: 48px; position: fixed; top: 48px; left: 0; right: 0; z-index: 30;"}
-       [:div {:class "navbar-menu is-active" :style "height: 48px;"}
-        (into [:div {:class "navbar-start" :style "height: 48px; align-items: center;"}]
-              [(wrap-btn font-minus-btn)
-               (wrap-btn font-plus-btn)
-               (wrap-btn speaker-btn)
-               (wrap-btn search-btn)])]]])))
-
-;; ── Render: Search bar ──
-;; Wrapped in desktop/mobile containers so margin-top adapts to 1 vs 2 navbars.
-(defn render-search-bar []
-  (let [{:keys [search-term search-results search-idx]} @app-state
-        input-el [:input {:id "search-input"
-                          :class "input is-small"
-                          :type "text"
-                          :placeholder "Search current chapter... (n/N to navigate)"
-                          :value search-term
-                          :style "max-width: 400px;"
-                          :oninput (fn [e] (do-search! (.. e -target -value)))
-                          :onkeydown (fn [e]
-                                       (when (= (.-key e) "Enter")
-                                         (search-next!)
-                                         (.preventDefault e))
-                                       (when (= (.-key e) "Escape")
-                                         (clear-search!)
-                                         (.blur (.. e -target))))}]
-        results-tag (when (seq search-results)
-                      [:span {:class "tag is-info"}
-                       (str (inc search-idx) "/" (count search-results))])]
-    ;; Desktop: single navbar = 48px margin. Mobile: two navbars = 96px margin.
-    (into [:div]
-          [[:div {:class "is-hidden-touch"
-                  :style "padding: 4px 8px; margin-top: 48px; display: flex; gap: 8px; align-items: center;"}
-            input-el results-tag]
-           [:div {:class "is-hidden-desktop"
-                  :style "padding: 4px 8px; margin-top: 96px; display: flex; gap: 8px; align-items: center;"}
-            input-el results-tag]])))
-
-;; ── Render: Progress overlay ──
-(defn render-progress-overlay []
-  (let [{:keys [loading load-progress total-books]} @app-state]
-    (when loading
-      [:div {:style "position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100;"}
-       [:div {:style "background: white; padding: 24px; border-radius: 8px; min-width: 300px; text-align: center;"}
-        [:p {:class "is-size-5 mb-4"} "Loading all books..."]
-        [:progress {:class "progress is-primary"
-                    :value load-progress
-                    :max "100"
-                    :style "width: 100%;"}
-         (str load-progress "%")]
-        [:p {:style "margin-top: 8px;"} (str load-progress "%")]]])))
-
-;; ── Render: Status bar ──
-(defn render-status-bar []
-  (let [{:keys [book chapter verse verses highlights search-results search-term font-size]} @app-state
-        total-verses (count (filter (fn [v] (= (:h v) 0)) verses))]
-    [:div {:style "position: fixed; bottom: 0; left: 0; right: 0; background: #f5f5f5; border-top: 1px solid #ddd; padding: 4px 12px; font-size: 12px; display: flex; justify-content: space-between; z-index: 50;"}
-     [:span (str book " " chapter " | " (when (> (count verses) 0) (str "Verse " (inc verse) "/" (count verses) " | ")) "Font: " font-size "px")]
-     [:span (str (count highlights) " highlights"
-                 (when (seq search-results) (str " | Search: " (inc (:search-idx @app-state)) "/" (count search-results))))]
-     [:span "j/k verse | h/l chapter | gg/G top/bot | / search | n/N next/prev match | Ctrl+d/u scroll | Ctrl+=/- font"]]))
-
-;; ── Render: Main UI ──
-(defn render-ui []
-  (let [el (.getElementById js/document "app")]
-    (when el
-      (set! (.-innerHTML el) "")
-      (rg/render el
-        [:div
-         (render-navbar)
-         (render-search-bar)
-         [:div {:style "margin-top: 8px; padding: 0 8px 60px 8px; overflow-y: auto; height: calc(100vh - 200px);"}
-          (render-verses)]
-         (render-progress-overlay)
-         (render-status-bar)])
-      ;; BUG 1 FIX: Sync select .value after reagami render with a short delay.
-      ;; reagami sets the HTML value attribute, but the browser only respects
-      ;; the .value property on <select> after re-render. setTimeout ensures DOM is ready.
-      (js/setTimeout (fn []
-        (let [book-sel (.querySelector js/document "select")]
-          (when book-sel (set! (.-value book-sel) (:book @app-state))))
-        (let [sels (.querySelectorAll js/document "select")]
-          (when (and sels (>= (.-length sels) 2))
-            (set! (.-value (aget sels 1)) (str (:chapter @app-state)))))) 50))))
-
-;; ── Force re-render ──
-(defn rerender! []
-  (render-ui))
-
-;; ── Vim key handling ──
-(defn handle-keydown [e]
-  (let [tag (.. e -target -tagName)
-        tag-upper (when tag (.toUpperCase tag))]
-    ;; Skip when target is input/textarea/select
-    (when (not (contains? #{"INPUT" "TEXTAREA" "SELECT"} tag-upper))
-      (let [key (.-key e)]
-        (cond
-          ;; j - next verse
-          (= key "j") (do (.preventDefault e) (next-verse!))
-          ;; k - previous verse
-          (= key "k") (do (.preventDefault e) (prev-verse!))
-          ;; Enter - scroll half page down
-          (= key "Enter") (do (.preventDefault e) (scroll-half-down!) (update-current-verse-from-viewport!))
-          ;; Backspace - scroll half page up
-          (= key "Backspace") (do (.preventDefault e) (scroll-half-up!) (update-current-verse-from-viewport!))
-          ;; Space - toggle highlight on current verse
-          (= key " ") (do
-                        (.preventDefault e)
-                        (let [verses (:verses @app-state)
-                              idx (:verse @app-state)]
-                          (when (and (seq verses) (>= idx 0) (< idx (count verses)))
-                            (let [v (nth verses idx)
-                                  vnum (:v v)]
-                              (when vnum
-                                (toggle-highlight! vnum))))))
-          ;; % - toggle between current and previous verse position
-          (= key "%") (do (.preventDefault e) (toggle-verse-position!))
-          ;; R - read verse aloud
-          (= key "R") (do (.preventDefault e) (read-verse!))
-          ;; h - previous chapter
-          (= key "h") (do (.preventDefault e) (prev-chapter!))
-          ;; l - next chapter
-          (= key "l") (do (.preventDefault e) (next-chapter!))
-          ;; / - focus search
-          (= key "/") (do
-                        (.preventDefault e)
-                        (let [input (.getElementById js/document "search-input")]
-                          (when input
-                            (.focus input)
-                            (set! (.-value input) "")
-                            (clear-search!))))
-          ;; n / N - search navigation
-          (= key "n") (do (.preventDefault e) (search-next!))
-          (= key "N") (do (.preventDefault e) (search-prev!))
-          ;; G / Shift+G
-          (= key "G") (do (.preventDefault e) (goto-bottom!))
-          ;; z - start of z-command sequence (zz, zt, zb)
-          (= key "z") (do
-                        (.preventDefault e)
-                        (let [now (.now js/Date)]
-                          (if-let [last-z (.-_lastZKey js/window)]
-                            ;; Second 'z' → zz: scroll current verse to center
-                            (do
-                              (when (< (- now last-z) 500)
-                                (let [v (:verse @app-state)
-                                      verses (:verses @app-state)
-                                      verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
-                                                  (:v (nth verses v)))
-                                      el (when verse-num (.getElementById js/document (str "v" verse-num)))]
-                                  (when el (.scrollIntoView el #js {:behavior "smooth" :block "center"}))))
-                              (set! (.-_lastZKey js/window) 0))
-                            ;; First 'z': start timer; default single-z = zt (scroll to top)
-                            (do
-                              (set! (.-_lastZKey js/window) now)
-                              (js/setTimeout
-                                (fn []
-                                  (when (= (.-_lastZKey js/window) now)
-                                    (let [v (:verse @app-state)
-                                          verses (:verses @app-state)
-                                          verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
-                                                      (:v (nth verses v)))
-                                          el (when verse-num (.getElementById js/document (str "v" verse-num)))]
-                                      (when el (.scrollIntoView el #js {:behavior "smooth" :block "start"})))
-                                    (set! (.-_lastZKey js/window) 0)))
-                                500)))))
-          ;; t after z → zt: scroll current verse to top
-          (= key "t") (when-let [last-z (.-_lastZKey js/window)]
-                        (when (< (- (.now js/Date) last-z) 500)
-                          (.preventDefault e)
-                          (let [v (:verse @app-state)
-                                verses (:verses @app-state)
-                                verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
-                                            (:v (nth verses v)))
-                                el (when verse-num (.getElementById js/document (str "v" verse-num)))]
-                            (when el (.scrollIntoView el #js {:behavior "smooth" :block "start"})))
-                          (set! (.-_lastZKey js/window) 0)
-                          true))
-          ;; b after z → zb: scroll current verse to bottom
-          (= key "b") (when-let [last-z (.-_lastZKey js/window)]
-                        (when (< (- (.now js/Date) last-z) 500)
-                          (.preventDefault e)
-                          (let [v (:verse @app-state)
-                                verses (:verses @app-state)
-                                verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
-                                            (:v (nth verses v)))
-                                el (when verse-num (.getElementById js/document (str "v" verse-num)))]
-                            (when el (.scrollIntoView el #js {:behavior "smooth" :block "end"})))
-                          (set! (.-_lastZKey js/window) 0)
-                          true))
-          ;; g - start of gg sequence
-          (= key "g") (do
-                        (.preventDefault e)
-                        (let [now (.now js/Date)]
-                          (if-let [last-g (.-_lastGKey js/window)]
-                            (do
-                              (when (< (- now last-g) 500)
-                                (goto-top!))
-                              (set! (.-_lastGKey js/window) 0))
-                            (set! (.-_lastGKey js/window) now))))
-          ;; Ctrl shortcuts
-          (and (.-ctrlKey e) (= key "d")) (do (.preventDefault e) (scroll-half-down!))
-          (and (.-ctrlKey e) (= key "u")) (do (.preventDefault e) (scroll-half-up!))
-          (and (.-ctrlKey e) (= key "f")) (do (.preventDefault e) (scroll-full-down!))
-          (and (.-ctrlKey e) (= key "b")) (do (.preventDefault e) (scroll-full-up!))
-          (and (.-ctrlKey e) (= key "=")) (do (.preventDefault e) (change-font-size! 2))
-          (and (.-ctrlKey e) (= key "-")) (do (.preventDefault e) (change-font-size! -2))
-          ;; Escape
-          (= key "Escape") (do (.preventDefault e) (clear-search!)
-                               (let [input (.getElementById js/document "search-input")]
-                                 (when input (.blur input))))
-          ;; v after number prefix → jump to verse number
-          (= key "v") (when-let [np (.-_numberPrefix js/window)]
-                        (when (< (- (.now js/Date) (.-ts np)) 700)
-                          (.preventDefault e)
-                          (let [vnum (js/parseInt (.-digits np) 10)]
-                            (when (>= vnum 1)
-                              (goto-verse-num! vnum)))
-                          (set! (.-_numberPrefix js/window) nil)))
-          ;; Number prefix for chapter jump
-          (re-matches #"[0-9]" key) (do
-                                      (.preventDefault e)
-                                      (let [now (.now js/Date)]
-                                        (if (.-_numberPrefix js/window)
-                                          (let [{:keys [digits ts]} (.-_numberPrefix js/window)]
-                                            (if (< (- now ts) 700)
-                                              (set! (.-_numberPrefix js/window)
-                                                    {:digits (str digits key) :ts now})
-                                              (set! (.-_numberPrefix js/window)
-                                                    {:digits key :ts now})))
-                                          (set! (.-_numberPrefix js/window)
-                                                {:digits key :ts now}))
-                                        (js/setTimeout
-                                          (fn []
-                                            (when-let [np (.-_numberPrefix js/window)]
-                                              (when (= (.-ts np) now)
-                                                (let [ch (js/parseInt (.-digits np) 10)]
-                                                  (when (and (>= ch 1) (<= ch (get-chapter-count (:book @app-state))))
-                                                    (goto-chapter! ch))
-                                                  (set! (.-_numberPrefix js/window) nil)))))
-                                          700)))
-          ) nil nil))))
-
-;; ── Init ──
-(defn init! []
-  (println "NASB Bible Reader initializing...")
-  ;; Attach key handler
-  (set! (.-onkeydown js/document) handle-keydown)
-  ;; ── Mobile swipe gestures ──
-  (let [startX (atom 0)
-        startY (atom 0)]
-    (.addEventListener js/document "touchstart"
-      (fn [e]
-        (when (and e (.-touches e) (pos? (.-length (.-touches e))))
-          (let [touch (aget (.-touches e) 0)
-                tag (.. e -target -tagName)]
-            (when (not (contains? #{"INPUT" "TEXTAREA" "SELECT"} tag))
-              (reset! startX (.-clientX touch))
-              (reset! startY (.-clientY touch))))))
-      #js{:passive true})
-    (.addEventListener js/document "touchend"
-      (fn [e]
-        (when (and e (.-changedTouches e) (pos? (.-length (.-changedTouches e))))
-          (let [touch (aget (.-changedTouches e) 0)
-                deltaX (- (.-clientX touch) @startX)
-                deltaY (- (.-clientY touch) @startY)]
-            (when (and (> (js/Math.abs deltaX) 50)
-                       (> (js/Math.abs deltaX) (js/Math.abs deltaY)))
-              (if (neg? deltaX)
-                (next-chapter!)
-                (prev-chapter!))))))
-      #js{:passive true}))
-  ;; Load highlights
-  (load-highlights!)
-  ;; Load settings
-  (load-settings!)
-  ;; Load Genesis 1
-  (load-chapter! "Genesis" 1)
-  ;; Render
-  (render-ui)
-  ;; Add watch for auto-rerender
-  (add-watch app-state :rerender (fn [_ _ _ _] (render-ui)))
-  (println "Initialized!"))
-
-;; ── Export to window.bibleApp ──
-(def bible-app-obj
-  #js {:appState app-state
-       :loadBook load-book!
-       :loadAll load-all!
-       :gotoChapter goto-chapter!
-       :nextVerse next-verse!
-       :prevVerse prev-verse!
-       :nextChapter next-chapter!
-       :prevChapter prev-chapter!
-       :toggleHighlight toggle-highlight!
-       :changeFontSize change-font-size!
-       :doSearch do-search!
-       :searchNext search-next!
-       :searchPrev search-prev!
-       :clearSearch clear-search!
-       :gotoTop goto-top!
-       :gotoBottom goto-bottom!
-       :gotoVerseNum goto-verse-num!
-       :rerender rerender!
-       :init init!})
-
-(set! (.-bibleApp js/window) bible-app-obj)
-
-;; ── Auto-start ──
-(init!)
-</script>
-
+<div id="app"><div style="text-align:center;padding:60px;color:#95a5a6"><p style="font-size:18px">NASB Bible</p><p>Loading...</p></div></div>
 <script type="module">
-import { compileString } from 'https://unpkg.com/squint-cljs/index.js';
-import * as reagami from 'https://unpkg.com/reagami@0.1.37/reagami.mjs';
-window.reagami = reagami;
+import * as squint_core from "squint-cljs/core.js";
+import * as dexie from "https://unpkg.com/dexie@3.2.4/dist/dexie.js";
+import * as rg from "https://unpkg.com/reagami@0.1.37/reagami.mjs";
+let link1 = document.createElement("link");
+link1.rel = "stylesheet";
+link1.href = "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css";
+document.head.appendChild(link1);
+let style2 = document.createElement("style");
+style2.textContent = `${".verse-current { background: #e3edf7 !important; border-left: 3px solid #3498db; }"}${".highlighted { background: #fff3a8 !important; }"}${".verse-current.highlighted { background: #c8e6c9 !important; border-left: 3px solid #2e7d32; }"}${"mark { background: #ffb6c1; border-radius: 2px; padding: 0 1px; }"}`;
+document.head.appendChild(style2);
+var books_list = ["Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel", "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra", "Nehemiah", "Esther", "Job", "Psalm", "Proverbs", "Ecclesiastes", "Song of Solomon", "Isaiah", "Jeremiah", "Lamentations", "Ezekiel", "Daniel", "Hosea", "Joel", "Amos", "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk", "Zephaniah", "Haggai", "Zechariah", "Malachi", "Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians", "1 Timothy", "2 Timothy", "Titus", "Philemon", "Hebrews", "James", "1 Peter", "2 Peter", "1 John", "2 John", "3 John", "Jude", "Revelation"];
+var chapter_counts = ({"Jude": 1, "1 Thessalonians": 5, "2 Thessalonians": 3, "Psalm": 150, "Revelation": 22, "Philippians": 4, "Judges": 21, "Galatians": 6, "2 Timothy": 4, "Ecclesiastes": 12, "Lamentations": 5, "2 Kings": 25, "Leviticus": 27, "Philemon": 1, "Joshua": 24, "Jeremiah": 52, "Romans": 16, "1 Peter": 5, "Zephaniah": 3, "Ruth": 4, "1 Kings": 22, "3 John": 1, "James": 5, "Nehemiah": 13, "1 Timothy": 6, "Colossians": 4, "2 Peter": 3, "2 Samuel": 24, "Zechariah": 14, "2 John": 1, "Daniel": 12, "Obadiah": 1, "Matthew": 28, "Luke": 24, "Hosea": 14, "Mark": 16, "John": 21, "Titus": 3, "Exodus": 40, "Nahum": 3, "Esther": 10, "Proverbs": 31, "Isaiah": 66, "Deuteronomy": 34, "Ezekiel": 48, "1 Samuel": 31, "Amos": 9, "Acts": 28, "Malachi": 4, "Joel": 3, "Hebrews": 13, "Numbers": 36, "1 Chronicles": 29, "1 John": 5, "Ezra": 10, "Ephesians": 6, "Job": 42, "Haggai": 2, "1 Corinthians": 16, "Song of Solomon": 8, "Genesis": 50, "Habakkuk": 3, "2 Chronicles": 36, "2 Corinthians": 13, "Micah": 7, "Jonah": 4});
+squint_core.println("Dexie global:", typeof Dexie);
+var bible_db = (new Dexie("BibleDB"));
+bible_db.version(1).stores(squint_core.clj__GT_js(({"verses": "&ref", "highlights": "&verseRef", "settings": "&keyName"})));
+var app_state = squint_core.atom(({"verse": 0, "font-size": 18, "search-term": "", "verses": [], "highlights": (new Set ([])), "book": "Genesis", "total-books": 66, "load-progress": 0, "chapter": 1, "count-loaded": 0, "loading": false, "search-results": [], "search-idx": -1}));
+var book__GT_filename = function (book) {
+return `${"data/"}${book.replace((new RegExp(" ", "g")), "_")??''}${".json"}`;
 
-const source = document.getElementById('squint-src').textContent;
+};
+var clean_text = function (s) {
+if (squint_core.truth_(squint_core.string_QMARK_(s))) {
+return s.replace((new RegExp("\\*[a-z]+", "g")), "")};
 
-try {
-  const js = compileString(source, { core_module: 'squint-cljs/core.js' });
-  // squint emits bare js__GT_clj — squint data IS JS, no conversion needed
-  const wrapped = 'const js__GT_clj = (x, ..._opts) => x;\n' + js;
-  const blob = new Blob([wrapped], { type: 'application/javascript' });
-  const url = URL.createObjectURL(blob);
-  await import(url);
-} catch (err) {
-  console.error('Squint compilation failed:', err);
-  document.getElementById('app').innerHTML = '<div class="notification is-danger">Compilation error: ' + err.message + '</div>';
-}
+};
+var read_verse_BANG_ = function () {
+const verses1 = squint_core.get(squint_core.deref(app_state), "verses");
+const idx2 = squint_core.get(squint_core.deref(app_state), "verse");
+if (squint_core.truth_((() => {
+const and__23718__auto__3 = squint_core.seq(verses1);
+if (squint_core.truth_(and__23718__auto__3)) {
+return ((idx2 >= 0) && (idx2 < squint_core.count(verses1)))} else {
+return and__23718__auto__3};
+
+})())) {
+const text4 = squint_core.get(squint_core.nth(verses1, idx2), "t");
+speechSynthesis.cancel();
+const utterance5 = (new SpeechSynthesisUtterance(text4));
+return speechSynthesis.speak(utterance5);
+};
+
+};
+var book_index = function (book) {
+const idx1 = books_list.indexOf(book);
+if ((idx1 >= 0)) {
+return idx1} else {
+return 0};
+
+};
+var get_chapter_count = function (book) {
+return squint_core.get(chapter_counts, book, 1);
+
+};
+var load_book_BANG_ = function (book) {
+const filename1 = book__GT_filename(book);
+return fetch(filename1).then((function (resp) {
+if (squint_core.truth_(resp.ok)) {
+return resp.json()} else {
+throw (new Error(`${"Failed to load "}${book??''}${": HTTP "}${resp.status??''}`))};
+
+})).then((function (data) {
+const arr2 = data;
+const grouped3 = squint_core.group_by("c", arr2);
+const entries4 = squint_core.map((function (p__3) {
+const vec__58 = p__3;
+const ch9 = squint_core.nth(vec__58, 0, null);
+const verses10 = squint_core.nth(vec__58, 1, null);
+return ({"ref": `${book??''}${":"}${ch9??''}`, "book": book, "chapter": (ch9 | 0), "verses": squint_core.map((function (v) {
+return ({"v": (squint_core.get(v, "v") | 0), "t": clean_text(squint_core.get(v, "t")), "h": (squint_core.get(v, "h") | 0)});
+
+}), verses10)});
+
+}), grouped3);
+return bible_db.verses.bulkPut(squint_core.clj__GT_js(entries4)).then((function () {
+squint_core.swap_BANG_(app_state, squint_core.update, "count-loaded", squint_core.inc);
+return squint_core.println("Loaded", book, squint_core.count(entries4), "chapters");
+
+}));
+
+})).catch((function (err) {
+return console.error("Failed to load", book, err);
+
+}));
+
+};
+var save_verse_pos_BANG_ = function () {
+const map__12 = squint_core.deref(app_state);
+const book3 = squint_core.get(map__12, "book");
+const chapter4 = squint_core.get(map__12, "chapter");
+const verse5 = squint_core.get(map__12, "verse");
+const key6 = `${"pos:"}${book3??''}${":"}${chapter4??''}`;
+return bible_db.settings.put(squint_core.clj__GT_js(({"keyName": key6, "value": `${verse5??''}`})));
+
+};
+var restore_verse_pos_BANG_ = function (book, ch) {
+const key1 = `${"pos:"}${book??''}${":"}${ch??''}`;
+return bible_db.settings.get(key1).then((function (row) {
+if (squint_core.truth_(row)) {
+const verse_idx2 = parseInt(row.value, 10);
+const verses3 = squint_core.get(squint_core.deref(app_state), "verses");
+if (squint_core.truth_((() => {
+const and__23718__auto__4 = squint_core.seq(verses3);
+if (squint_core.truth_(and__23718__auto__4)) {
+return ((verse_idx2 >= 0) && (verse_idx2 < squint_core.count(verses3)))} else {
+return and__23718__auto__4};
+
+})())) {
+squint_core.swap_BANG_(app_state, squint_core.assoc, "verse", verse_idx2);
+const verse_num5 = squint_core.get(squint_core.nth(verses3, verse_idx2), "v");
+const el6 = document.getElementById(`v${verse_num5??''}`);
+if (squint_core.truth_(el6)) {
+el6.scrollIntoView(({"behavior": "smooth", "block": "center"}))};
+return squint_core.println("Restored verse position:", book, ch, "verse", verse_idx2);
+};
+};
+
+}));
+
+};
+var load_highlights_BANG_ = function () {
+return bible_db.highlights.toArray().then((function (rows) {
+const hs1 = squint_core.set(squint_core.map((function (_PERCENT_1) {
+return _PERCENT_1.verseRef;
+
+}), rows));
+squint_core.swap_BANG_(app_state, squint_core.assoc, "highlights", hs1);
+return squint_core.println("Loaded", squint_core.count(hs1), "highlights");
+
+}));
+
+};
+var load_settings_BANG_ = function () {
+return bible_db.settings.toArray().then((function (rows) {
+for (let G__1 of squint_core.iterable(rows)) {
+const row2 = G__1;
+const k3 = squint_core.keyword(row2.keyName);
+const v4 = row2.value;
+if ((k3 === "font-size")) {
+squint_core.swap_BANG_(app_state, squint_core.assoc, "font-size", parseInt(v4, 10))}
+};
+return squint_core.println("Settings loaded");
+
+}));
+
+};
+var save_setting_BANG_ = function (k, v) {
+return bible_db.settings.put(squint_core.clj__GT_js(({"keyName": squint_core.name(k), "value": `${v??''}`})));
+
+};
+var load_chapter_BANG_ = function (book, ch) {
+const ref1 = `${book??''}${":"}${ch??''}`;
+return bible_db.verses.get(ref1).then((function (row) {
+if (squint_core.truth_(row)) {
+const verses2 = row.verses;
+const first_verse_idx3 = (() => {
+const or__23674__auto__4 = squint_core.first(squint_core.keep_indexed((function (_PERCENT_1, _PERCENT_2) {
+if ((squint_core.get(_PERCENT_2, "h") === 0)) {
+return _PERCENT_1;
+};
+
+}), verses2));
+if (squint_core.truth_(or__23674__auto__4)) {
+return or__23674__auto__4} else {
+return 0};
+
+})();
+squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book, "chapter", ch, "verse", first_verse_idx3, "verses", verses2);
+squint_core.println("Displaying", book, ch, "-", squint_core.count(verses2), "entries (first verse idx:", first_verse_idx3, ")");
+return restore_verse_pos_BANG_(book, ch);
+} else {
+squint_core.println("Chapter not found in DB, loading book first...");
+return load_book_BANG_(book).then((function () {
+return load_chapter_BANG_(book, ch);
+
+}));
+};
+
+}));
+
+};
+var goto_verse_BANG_ = function (idx) {
+const verses1 = squint_core.get(squint_core.deref(app_state), "verses");
+const n2 = squint_core.count(verses1);
+if ((n2 > 0)) {
+const i3 = squint_core.max(0, squint_core.min((n2 - 1), idx));
+squint_core.swap_BANG_(app_state, squint_core.assoc, "verse", i3);
+const verse_num4 = squint_core.get_in(squint_core.deref(app_state), ["verses", squint_core.get(squint_core.deref(app_state), "verse"), "v"]);
+const el5 = document.getElementById(`v${verse_num4??''}`);
+if (squint_core.truth_(el5)) {
+return el5.scrollIntoView(({"behavior": "smooth", "block": "center"}));
+};
+};
+
+};
+var next_verse_BANG_ = function () {
+const idx1 = squint_core.get(squint_core.deref(app_state), "verse");
+const cnt2 = squint_core.count(squint_core.get(squint_core.deref(app_state), "verses"));
+if (((idx1 + 1) < cnt2)) {
+goto_verse_BANG_((idx1 + 1));
+return save_verse_pos_BANG_();
+};
+
+};
+var prev_verse_BANG_ = function () {
+const idx1 = squint_core.get(squint_core.deref(app_state), "verse");
+if ((idx1 > 0)) {
+goto_verse_BANG_((idx1 - 1));
+return save_verse_pos_BANG_();
+};
+
+};
+var goto_chapter_BANG_ = function (ch) {
+const book1 = squint_core.get(squint_core.deref(app_state), "book");
+const max_ch2 = get_chapter_count(book1);
+if (squint_core.truth_(((ch >= 1) && (ch <= max_ch2)))) {
+squint_core.swap_BANG_(app_state, squint_core.assoc, "chapter", ch, "verse", 0, "verses", [], "search-term", "", "search-results", [], "search-idx", -1);
+return load_chapter_BANG_(book1, ch);
+};
+
+};
+var goto_book_BANG_ = function (book) {
+"Jump to a specific book at chapter 1. Resets search and verse position.";
+if (squint_core.truth_(squint_core.contains_QMARK_(chapter_counts, book))) {
+squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book, "chapter", 1, "verse", 0, "verses", [], "search-term", "", "search-results", [], "search-idx", -1);
+load_chapter_BANG_(book, 1);
+return squint_core.println("Switched to", book);
+};
+
+};
+var next_chapter_BANG_ = function () {
+const book1 = squint_core.get(squint_core.deref(app_state), "book");
+const ch2 = squint_core.get(squint_core.deref(app_state), "chapter");
+const max_ch3 = get_chapter_count(book1);
+if ((ch2 < max_ch3)) {
+return goto_chapter_BANG_((ch2 + 1))} else {
+const bi4 = book_index(book1);
+if (((bi4 + 1) < squint_core.count(books_list))) {
+const next_book5 = squint_core.nth(books_list, (bi4 + 1));
+squint_core.swap_BANG_(app_state, squint_core.assoc, "book", next_book5);
+return goto_chapter_BANG_(1);
+};
+};
+
+};
+var prev_chapter_BANG_ = function () {
+const book1 = squint_core.get(squint_core.deref(app_state), "book");
+const ch2 = squint_core.get(squint_core.deref(app_state), "chapter");
+if ((ch2 > 1)) {
+return goto_chapter_BANG_((ch2 - 1))} else {
+const bi3 = book_index(book1);
+if ((bi3 > 0)) {
+const prev_book4 = squint_core.nth(books_list, (bi3 - 1));
+const max_ch5 = get_chapter_count(prev_book4);
+squint_core.swap_BANG_(app_state, squint_core.assoc, "book", prev_book4);
+return goto_chapter_BANG_(max_ch5);
+};
+};
+
+};
+var scroll_half_down_BANG_ = function () {
+return window.scrollBy(0, ((window.innerHeight / 2) | 0));
+
+};
+var scroll_half_up_BANG_ = function () {
+return window.scrollBy(0, ((window.innerHeight / -2) | 0));
+
+};
+var scroll_full_down_BANG_ = function () {
+return window.scrollBy(0, window.innerHeight);
+
+};
+var scroll_full_up_BANG_ = function () {
+return window.scrollBy(0, (-(window.innerHeight)));
+
+};
+var update_current_verse_from_viewport_BANG_ = function () {
+const verse_els1 = document.querySelectorAll("[id^=v]");
+const viewport_center2 = (window.innerHeight / 2);
+const closest3 = squint_core.atom(null);
+const closest_dist4 = squint_core.atom(Infinity);
+const n45 = verse_els1.length;
+let i6 = 0;
+for (;i6<n45;i6++) {
+(() => {
+const el7 = verse_els1.item(i6);
+const rect8 = el7.getBoundingClientRect();
+const el_center9 = (rect8.top + (rect8.height / 2));
+const dist10 = Math.abs((el_center9 - viewport_center2));
+if ((dist10 < squint_core.deref(closest_dist4))) {
+squint_core.reset_BANG_(closest_dist4, dist10);
+return squint_core.reset_BANG_(closest3, el7);
+};
+
+})()
+};
+const temp__23263__auto__11 = squint_core.deref(closest3);
+if (squint_core.truth_(temp__23263__auto__11)) {
+const closest_el12 = temp__23263__auto__11;
+const verse_num13 = parseInt(closest_el12.id.substring(1), 10);
+const verses14 = squint_core.get(squint_core.deref(app_state), "verses");
+const idx15 = squint_core.first(squint_core.keep_indexed((function (_PERCENT_1, _PERCENT_2) {
+if (squint_core._EQ_(squint_core.get(_PERCENT_2, "v"), verse_num13)) {
+return _PERCENT_1;
+};
+
+}), verses14));
+if (squint_core.truth_(idx15)) {
+squint_core.swap_BANG_(app_state, squint_core.assoc, "verse", idx15);
+return save_verse_pos_BANG_();
+};
+};
+
+};
+var goto_top_BANG_ = function () {
+"Jump to first non-heading verse (h=0) and scroll it to center of viewport.";
+const verses1 = squint_core.get(squint_core.deref(app_state), "verses");
+if (squint_core.truth_(squint_core.seq(verses1))) {
+const first_non_heading2 = squint_core.first(squint_core.keep_indexed((function (_PERCENT_1, _PERCENT_2) {
+if ((squint_core.get(_PERCENT_2, "h") === 0)) {
+return _PERCENT_1;
+};
+
+}), verses1));
+return goto_verse_BANG_((() => {
+const or__23674__auto__3 = first_non_heading2;
+if (squint_core.truth_(or__23674__auto__3)) {
+return or__23674__auto__3} else {
+return 0};
+
+})());
+};
+
+};
+var goto_bottom_BANG_ = function () {
+const verses1 = squint_core.get(squint_core.deref(app_state), "verses");
+if (squint_core.truth_(squint_core.seq(verses1))) {
+return goto_verse_BANG_((squint_core.count(verses1) - 1));
+};
+
+};
+var goto_verse_num_BANG_ = function (verse_num) {
+const verses1 = squint_core.get(squint_core.deref(app_state), "verses");
+if (squint_core.truth_(squint_core.seq(verses1))) {
+const idx2 = squint_core.first(squint_core.keep_indexed((function (i, v) {
+if (squint_core._EQ_(squint_core.get(v, "v"), verse_num)) {
+return i;
+};
+
+}), verses1));
+if (squint_core.truth_(idx2)) {
+goto_verse_BANG_(idx2);
+save_verse_pos_BANG_();
+return squint_core.println("Jumped to verse", verse_num);
+} else {
+return squint_core.println("Verse", verse_num, "not found in this chapter")};
+} else {
+return squint_core.println("No verses loaded")};
+
+};
+var toggle_highlight_BANG_ = function (verse_num) {
+const book1 = squint_core.get(squint_core.deref(app_state), "book");
+const ch2 = squint_core.get(squint_core.deref(app_state), "chapter");
+const ref3 = `${book1??''}${":"}${ch2??''}${":"}${verse_num??''}`;
+const hs4 = squint_core.get(squint_core.deref(app_state), "highlights");
+if (squint_core.truth_(squint_core.contains_QMARK_(hs4, ref3))) {
+bible_db.highlights.delete(ref3);
+return squint_core.swap_BANG_(app_state, squint_core.update, "highlights", squint_core.disj, ref3);
+} else {
+bible_db.highlights.put(squint_core.clj__GT_js(({"verseRef": ref3})));
+return squint_core.swap_BANG_(app_state, squint_core.update, "highlights", squint_core.conj, ref3);
+};
+
+};
+var change_font_size_BANG_ = function (delta) {
+const new_sz1 = (squint_core.get(squint_core.deref(app_state), "font-size") + delta);
+if (squint_core.truth_(((new_sz1 >= 10) && (new_sz1 <= 48)))) {
+squint_core.swap_BANG_(app_state, squint_core.assoc, "font-size", new_sz1);
+return save_setting_BANG_("font-size", new_sz1);
+};
+
+};
+var do_search_BANG_ = function (term) {
+const term1 = (() => {
+const or__23674__auto__2 = term;
+if (squint_core.truth_(or__23674__auto__2)) {
+return or__23674__auto__2} else {
+return ""};
+
+})();
+const verses3 = squint_core.get(squint_core.deref(app_state), "verses");
+if (squint_core.truth_(squint_core.empty_QMARK_(term1))) {
+return squint_core.swap_BANG_(app_state, squint_core.assoc, "search-term", "", "search-results", [], "search-idx", -1)} else {
+const results4 = squint_core.keep_indexed((function (i, v) {
+if (squint_core.truth_(((squint_core.get(v, "h") === 0) && (squint_core.get(v, "t").toLowerCase().indexOf(term1.toLowerCase()) >= 0)))) {
+return i;
+};
+
+}), verses3);
+squint_core.swap_BANG_(app_state, squint_core.assoc, "search-term", term1, "search-results", squint_core.vec(results4), "search-idx", ((squint_core.truth_(squint_core.seq(results4))) ? (0) : (-1)));
+if (squint_core.truth_(squint_core.seq(results4))) {
+return goto_verse_BANG_(squint_core.first(results4));
+};
+};
+
+};
+var search_next_BANG_ = function () {
+const results1 = squint_core.get(squint_core.deref(app_state), "search-results");
+const idx2 = squint_core.get(squint_core.deref(app_state), "search-idx");
+if (squint_core.truth_(squint_core.seq(results1))) {
+const new_idx3 = squint_core.mod((idx2 + 1), squint_core.count(results1));
+squint_core.swap_BANG_(app_state, squint_core.assoc, "search-idx", new_idx3);
+return goto_verse_BANG_(squint_core.nth(results1, new_idx3));
+};
+
+};
+var search_prev_BANG_ = function () {
+const results1 = squint_core.get(squint_core.deref(app_state), "search-results");
+const idx2 = squint_core.get(squint_core.deref(app_state), "search-idx");
+if (squint_core.truth_(squint_core.seq(results1))) {
+const new_idx3 = squint_core.mod((idx2 - 1), squint_core.count(results1));
+squint_core.swap_BANG_(app_state, squint_core.assoc, "search-idx", new_idx3);
+return goto_verse_BANG_(squint_core.nth(results1, new_idx3));
+};
+
+};
+var clear_search_BANG_ = function () {
+return squint_core.swap_BANG_(app_state, squint_core.assoc, "search-term", "", "search-results", [], "search-idx", -1);
+
+};
+var load_all_BANG_ = function () {
+squint_core.swap_BANG_(app_state, squint_core.assoc, "loading", true, "load-progress", 0, "count-loaded", 0);
+return bible_db.verses.toArray().then((function (rows) {
+const cached1 = squint_core.set(squint_core.map((function (_PERCENT_1) {
+return _PERCENT_1.book;
+
+}), rows));
+const to_load2 = squint_core.filter((function (_PERCENT_1) {
+return squint_core.not(squint_core.contains_QMARK_(cached1, _PERCENT_1));
+
+}), books_list);
+const total3 = squint_core.count(to_load2);
+squint_core.swap_BANG_(app_state, squint_core.assoc, "total-books", total3);
+if ((total3 === 0)) {
+squint_core.swap_BANG_(app_state, squint_core.assoc, "loading", false, "load-progress", 100);
+return squint_core.println("All books already cached!");
+} else {
+const load_next4 = (function load_next (remaining) {
+if (squint_core.truth_(squint_core.empty_QMARK_(remaining))) {
+squint_core.swap_BANG_(app_state, squint_core.assoc, "loading", false, "load-progress", 100);
+return squint_core.println("All books loaded!");
+} else {
+const book5 = squint_core.first(remaining);
+const pct6 = ((100 * ((total3 - squint_core.count(remaining)) / squint_core.max(1, total3))) | 0);
+squint_core.swap_BANG_(app_state, squint_core.assoc, "load-progress", pct6);
+return load_book_BANG_(book5).then((function () {
+squint_core.swap_BANG_(app_state, squint_core.update, "load-progress", (function (_) {
+return ((100 * ((total3 - squint_core.count(squint_core.rest(remaining))) / squint_core.max(1, total3))) | 0);
+
+}));
+return load_next(squint_core.rest(remaining));
+
+})).catch((function (err) {
+console.error("Error loading", book5, err);
+return load_next(squint_core.rest(remaining));
+
+}));
+};
+
+});
+return load_next4(to_load2);
+};
+
+}));
+
+};
+var render_verse_row = function (v, idx, font_size, highlights, book, chapter, current_verse_num, search_term) {
+const verse_num1 = squint_core.get(v, "v");
+const text2 = squint_core.get(v, "t");
+const is_heading3 = (squint_core.get(v, "h") > 0);
+const ref4 = `${book??''}${":"}${chapter??''}${":"}${verse_num1??''}`;
+const highlighted5 = squint_core.contains_QMARK_(highlights, ref4);
+const is_current6 = squint_core._EQ_(verse_num1, current_verse_num);
+if (is_heading3) {
+return ["div", ({"style": "padding: 8px 16px; margin-top: 4px;", "class": "has-text-weight-bold has-text-centered is-size-5"}), text2]} else {
+return ["div", ({"id": `v${verse_num1??''}`, "onclick": (function (_) {
+return toggle_highlight_BANG_(verse_num1);
+
+}), "class": `${((is_current6) ? ("verse-current") : (null))??''}${((squint_core.truth_(highlighted5)) ? (" highlighted") : (null))??''}`, "style": `${"display: flex; padding: 4px 8px; cursor: pointer; border-bottom: 1px solid #eee;"}${squint_core.list()??''}`}), ["div", ({"style": `${"color: #aaa; text-align: right; min-width: 48px; padding-right: 12px; font-size: "}${(font_size - 2)}${"px; user-select: none;"}`}), verse_num1], ["div", ({"style": `${"font-size: "}${font_size??''}${"px; flex: 1;"}`}), highlight_matches(text2, search_term)]]};
+
+};
+var render_verses = function () {
+const map__12 = squint_core.deref(app_state);
+const verses3 = squint_core.get(map__12, "verses");
+const font_size4 = squint_core.get(map__12, "font-size");
+const highlights5 = squint_core.get(map__12, "highlights");
+const book6 = squint_core.get(map__12, "book");
+const chapter7 = squint_core.get(map__12, "chapter");
+const verse8 = squint_core.get(map__12, "verse");
+const current_verse_num9 = ((squint_core.truth_((() => {
+const and__23718__auto__10 = squint_core.seq(verses3);
+if (squint_core.truth_(and__23718__auto__10)) {
+return ((verse8 >= 0) && (verse8 < squint_core.count(verses3)))} else {
+return and__23718__auto__10};
+
+})())) ? (squint_core.get(squint_core.nth(verses3, verse8), "v")) : (null));
+if (squint_core.truth_(squint_core.empty_QMARK_(verses3))) {
+return ["div", ({"class": "notification is-info"}), "Loading..."]} else {
+return squint_core.into(["div"], squint_core.map_indexed((function (idx, v) {
+return render_verse_row(v, idx, font_size4, highlights5, book6, chapter7, current_verse_num9);
+
+}), verses3))};
+
+};
+var render_navbar = function () {
+const map__12 = squint_core.deref(app_state);
+const book3 = squint_core.get(map__12, "book");
+const chapter4 = squint_core.get(map__12, "chapter");
+const font_size5 = squint_core.get(map__12, "font-size");
+const book_chapters6 = squint_core.range(1, (get_chapter_count(book3) + 1));
+const font_minus_btn7 = ["button", ({"class": "button is-small is-light", "onclick": (function (_) {
+return change_font_size_BANG_(-2);
+
+}), "title": "Decrease font"}), "A-"];
+const font_plus_btn8 = ["button", ({"class": "button is-small is-light", "onclick": (function (_) {
+return change_font_size_BANG_(2);
+
+}), "title": "Increase font"}), "A+"];
+const speaker_btn9 = ["button", ({"class": "button is-small is-light", "onclick": (function (_) {
+return read_verse_BANG_();
+
+}), "title": "Read verse aloud (R)"}), "🔊"];
+const search_btn10 = ["button", ({"class": "button is-small is-info", "onclick": (function (_) {
+const input11 = document.getElementById("search-input");
+if (squint_core.truth_(input11)) {
+input11.focus();
+return input11.select();
+};
+
+})}), "🔍"];
+const load_book_btn12 = ["button", ({"class": "button is-small is-primary", "onclick": (function (_) {
+return load_book_BANG_(book3);
+
+})}), "Load Book"];
+const load_all_btn13 = ["button", ({"class": "button is-small is-warning", "onclick": (function (_) {
+return load_all_BANG_();
+
+})}), "Load All"];
+const wrap_btn14 = (function (btn) {
+return ["div", ({"class": "navbar-item", "style": "padding: 4px;"}), btn];
+
+});
+const book_select15 = ["div", ({"class": "navbar-item", "style": "padding: 4px;"}), ["div", ({"class": "select is-small"}), squint_core.into(["select", ({"value": book3, "onchange": (function (e) {
+const new_book16 = e.target.value;
+squint_core.swap_BANG_(app_state, squint_core.assoc, "book", new_book16, "chapter", 1, "verse", 0, "verses", [], "search-term", "", "search-results", [], "search-idx", -1);
+return load_chapter_BANG_(new_book16, 1);
+
+})})], squint_core.mapv((function (b) {
+return ["option", ({"value": b, "key": b}), b];
+
+}), books_list))]];
+const chapter_select17 = ["div", ({"class": "navbar-item", "style": "padding: 4px;"}), ["div", ({"class": "select is-small"}), squint_core.into(["select", ({"value": `${chapter4??''}`, "onchange": (function (e) {
+const new_ch18 = parseInt(e.target.value, 10);
+return goto_chapter_BANG_(new_ch18);
+
+})})], squint_core.mapv((function (c) {
+return ["option", ({"value": `${c??''}`, "key": c}), c];
+
+}), book_chapters6))]];
+const nav_brand19 = ["div", ({"class": "navbar-brand", "style": "min-height: 48px;"}), ["span", ({"class": "navbar-item", "style": "font-weight: bold; padding: 0 12px; height: 48px;"}), "NASB"]];
+return squint_core.into(["div"], [["nav", ({"class": "navbar is-dark is-fixed-top is-hidden-touch", "style": "height: 48px; min-height: 48px;"}), nav_brand19, ["div", ({"class": "navbar-menu is-active", "style": "height: 48px;"}), squint_core.into(["div", ({"class": "navbar-start", "style": "height: 48px; align-items: center;"})], [book_select15, chapter_select17, wrap_btn14(font_minus_btn7), wrap_btn14(font_plus_btn8), wrap_btn14(speaker_btn9), wrap_btn14(search_btn10), wrap_btn14(load_book_btn12), wrap_btn14(load_all_btn13)])]], ["nav", ({"class": "navbar is-dark is-hidden-desktop", "style": "height: 48px; min-height: 48px; position: fixed; top: 0; left: 0; right: 0; z-index: 31;"}), nav_brand19, ["div", ({"class": "navbar-menu is-active", "style": "height: 48px;"}), squint_core.into(["div", ({"class": "navbar-start", "style": "height: 48px; align-items: center;"})], [book_select15, chapter_select17, wrap_btn14(load_book_btn12), wrap_btn14(load_all_btn13)])]], ["nav", ({"class": "navbar is-dark is-hidden-desktop", "style": "height: 48px; min-height: 48px; position: fixed; top: 48px; left: 0; right: 0; z-index: 30;"}), ["div", ({"class": "navbar-menu is-active", "style": "height: 48px;"}), squint_core.into(["div", ({"class": "navbar-start", "style": "height: 48px; align-items: center;"})], [wrap_btn14(font_minus_btn7), wrap_btn14(font_plus_btn8), wrap_btn14(speaker_btn9), wrap_btn14(search_btn10)])]]]);
+
+};
+var render_search_bar = function () {
+const map__12 = squint_core.deref(app_state);
+const search_term3 = squint_core.get(map__12, "search-term");
+const search_results4 = squint_core.get(map__12, "search-results");
+const search_idx5 = squint_core.get(map__12, "search-idx");
+const input_el6 = ["input", ({"id": "search-input", "class": "input is-small", "type": "text", "placeholder": "Search current chapter... (n/N to navigate)", "value": search_term3, "style": "max-width: 400px;", "oninput": (function (e) {
+return do_search_BANG_(e.target.value);
+
+}), "onkeydown": (function (e) {
+if ((e.key === "Enter")) {
+search_next_BANG_();
+e.preventDefault()};
+if ((e.key === "Escape")) {
+clear_search_BANG_();
+return e.target.blur();
+};
+
+})})];
+const results_tag7 = ((squint_core.truth_(squint_core.seq(search_results4))) ? (["span", ({"class": "tag is-info"}), `${(search_idx5 + 1)}${"/"}${squint_core.count(search_results4)??''}`]) : (null));
+return squint_core.into(["div"], [["div", ({"class": "is-hidden-touch", "style": "padding: 4px 8px; margin-top: 48px; display: flex; gap: 8px; align-items: center;"}), input_el6, results_tag7], ["div", ({"class": "is-hidden-desktop", "style": "padding: 4px 8px; margin-top: 96px; display: flex; gap: 8px; align-items: center;"}), input_el6, results_tag7]]);
+
+};
+var render_progress_overlay = function () {
+const map__12 = squint_core.deref(app_state);
+const loading3 = squint_core.get(map__12, "loading");
+const load_progress4 = squint_core.get(map__12, "load-progress");
+const total_books5 = squint_core.get(map__12, "total-books");
+if (squint_core.truth_(loading3)) {
+return ["div", ({"style": "position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 100;"}), ["div", ({"style": "background: white; padding: 24px; border-radius: 8px; min-width: 300px; text-align: center;"}), ["p", ({"class": "is-size-5 mb-4"}), "Loading all books..."], ["progress", ({"class": "progress is-primary", "value": load_progress4, "max": "100", "style": "width: 100%;"}), `${load_progress4??''}${"%"}`], ["p", ({"style": "margin-top: 8px;"}), `${load_progress4??''}${"%"}`]]];
+};
+
+};
+var render_status_bar = function () {
+const map__12 = squint_core.deref(app_state);
+const book3 = squint_core.get(map__12, "book");
+const chapter4 = squint_core.get(map__12, "chapter");
+const verse5 = squint_core.get(map__12, "verse");
+const verses6 = squint_core.get(map__12, "verses");
+const highlights7 = squint_core.get(map__12, "highlights");
+const search_results8 = squint_core.get(map__12, "search-results");
+const search_term9 = squint_core.get(map__12, "search-term");
+const font_size10 = squint_core.get(map__12, "font-size");
+const total_verses11 = squint_core.count(squint_core.filter((function (v) {
+return (squint_core.get(v, "h") === 0);
+
+}), verses6));
+return ["div", ({"style": "position: fixed; bottom: 0; left: 0; right: 0; background: #f5f5f5; border-top: 1px solid #ddd; padding: 4px 12px; font-size: 12px; display: flex; justify-content: space-between; z-index: 50;"}), ["span", `${book3??''}${" "}${chapter4??''}${" | "}${(((squint_core.count(verses6) > 0)) ? (`${"Verse "}${(verse5 + 1)}${"/"}${squint_core.count(verses6)??''}${" | "}`) : (null))??''}${"Font: "}${font_size10??''}px`], ["span", `${squint_core.count(highlights7)??''}${" highlights"}${((squint_core.truth_(squint_core.seq(search_results8))) ? (`${" | Search: "}${(squint_core.get(squint_core.deref(app_state), "search-idx") + 1)}${"/"}${squint_core.count(search_results8)??''}`) : (null))??''}`], ["span", "j/k verse | h/l chapter | gg/G top/bot | / search | n/N next/prev match | Ctrl+d/u scroll | Ctrl+=/- font"]];
+
+};
+var render_ui = function () {
+const el1 = document.getElementById("app");
+if (squint_core.truth_(el1)) {
+el1.innerHTML = "";
+rg.render(el1, ["div", render_navbar(), render_search_bar(), ["div", ({"style": "margin-top: 8px; padding: 0 8px 60px 8px;"}), render_verses()], render_progress_overlay(), render_status_bar()]);
+return setTimeout((function () {
+const book_sel2 = document.querySelector("select");
+if (squint_core.truth_(book_sel2)) {
+book_sel2.value = squint_core.get(squint_core.deref(app_state), "book")};
+const sels3 = document.querySelectorAll("select");
+if (squint_core.truth_((() => {
+const and__23718__auto__4 = sels3;
+if (squint_core.truth_(and__23718__auto__4)) {
+return (sels3.length >= 2)} else {
+return and__23718__auto__4};
+
+})())) {
+return sels3[1].value = `${squint_core.get(squint_core.deref(app_state), "chapter")??''}`;
+};
+
+}), 50);
+};
+
+};
+var rerender_BANG_ = function () {
+return render_ui();
+
+};
+var handle_keydown = function (e) {
+const tag1 = e.target.tagName;
+const tag_upper2 = ((squint_core.truth_(tag1)) ? (tag1.toUpperCase()) : (null));
+if (squint_core.not(squint_core.contains_QMARK_((new Set (["INPUT", "TEXTAREA", "SELECT"])), tag_upper2))) {
+const key3 = e.key;
+if ((key3 === "j")) {
+e.preventDefault();
+next_verse_BANG_()} else {
+if ((key3 === "k")) {
+e.preventDefault();
+prev_verse_BANG_()} else {
+if ((key3 === "Enter")) {
+e.preventDefault();
+scroll_half_down_BANG_();
+update_current_verse_from_viewport_BANG_()} else {
+if ((key3 === "Backspace")) {
+e.preventDefault();
+scroll_half_up_BANG_();
+update_current_verse_from_viewport_BANG_()} else {
+if ((key3 === " ")) {
+e.preventDefault();
+const verses4 = squint_core.get(squint_core.deref(app_state), "verses");
+const idx5 = squint_core.get(squint_core.deref(app_state), "verse");
+if (squint_core.truth_((() => {
+const and__23718__auto__6 = squint_core.seq(verses4);
+if (squint_core.truth_(and__23718__auto__6)) {
+return ((idx5 >= 0) && (idx5 < squint_core.count(verses4)))} else {
+return and__23718__auto__6};
+
+})())) {
+const v7 = squint_core.nth(verses4, idx5);
+const vnum8 = squint_core.get(v7, "v");
+if (squint_core.truth_(vnum8)) {
+toggle_highlight_BANG_(vnum8)}}} else {
+if ((key3 === "R")) {
+e.preventDefault();
+read_verse_BANG_()} else {
+if ((key3 === "h")) {
+e.preventDefault();
+prev_chapter_BANG_()} else {
+if ((key3 === "l")) {
+e.preventDefault();
+next_chapter_BANG_()} else {
+if ((key3 === "/")) {
+e.preventDefault();
+const input9 = document.getElementById("search-input");
+if (squint_core.truth_(input9)) {
+input9.focus();
+input9.value = "";
+clear_search_BANG_()}} else {
+if ((key3 === "n")) {
+e.preventDefault();
+search_next_BANG_()} else {
+if ((key3 === "N")) {
+e.preventDefault();
+search_prev_BANG_()} else {
+if ((key3 === "G")) {
+e.preventDefault();
+goto_bottom_BANG_()} else {
+if ((key3 === "z")) {
+e.preventDefault();
+const now10 = Date.now();
+const temp__23182__auto__11 = window._lastZKey;
+if (squint_core.truth_(temp__23182__auto__11)) {
+const last_z12 = temp__23182__auto__11;
+if (((now10 - last_z12) < 500)) {
+const v13 = squint_core.get(squint_core.deref(app_state), "verse");
+const verses14 = squint_core.get(squint_core.deref(app_state), "verses");
+const verse_num15 = ((squint_core.truth_((() => {
+const and__23718__auto__16 = squint_core.seq(verses14);
+if (squint_core.truth_(and__23718__auto__16)) {
+return ((v13 >= 0) && (v13 < squint_core.count(verses14)))} else {
+return and__23718__auto__16};
+
+})())) ? (squint_core.get(squint_core.nth(verses14, v13), "v")) : (null));
+const el17 = ((squint_core.truth_(verse_num15)) ? (document.getElementById(`v${verse_num15??''}`)) : (null));
+if (squint_core.truth_(el17)) {
+el17.scrollIntoView(({"behavior": "smooth", "block": "center"}))}};
+window._lastZKey = 0} else {
+window._lastZKey = now10;
+setTimeout((function () {
+if (squint_core._EQ_(window._lastZKey, now10)) {
+const v18 = squint_core.get(squint_core.deref(app_state), "verse");
+const verses19 = squint_core.get(squint_core.deref(app_state), "verses");
+const verse_num20 = ((squint_core.truth_((() => {
+const and__23718__auto__21 = squint_core.seq(verses19);
+if (squint_core.truth_(and__23718__auto__21)) {
+return ((v18 >= 0) && (v18 < squint_core.count(verses19)))} else {
+return and__23718__auto__21};
+
+})())) ? (squint_core.get(squint_core.nth(verses19, v18), "v")) : (null));
+const el22 = ((squint_core.truth_(verse_num20)) ? (document.getElementById(`v${verse_num20??''}`)) : (null));
+if (squint_core.truth_(el22)) {
+el22.scrollIntoView(({"behavior": "smooth", "block": "start"}))};
+return window._lastZKey = 0;
+};
+
+}), 500)}} else {
+if ((key3 === "t")) {
+const temp__23263__auto__23 = window._lastZKey;
+if (squint_core.truth_(temp__23263__auto__23)) {
+const last_z24 = temp__23263__auto__23;
+if (((Date.now() - last_z24) < 500)) {
+e.preventDefault();
+const v25 = squint_core.get(squint_core.deref(app_state), "verse");
+const verses26 = squint_core.get(squint_core.deref(app_state), "verses");
+const verse_num27 = ((squint_core.truth_((() => {
+const and__23718__auto__28 = squint_core.seq(verses26);
+if (squint_core.truth_(and__23718__auto__28)) {
+return ((v25 >= 0) && (v25 < squint_core.count(verses26)))} else {
+return and__23718__auto__28};
+
+})())) ? (squint_core.get(squint_core.nth(verses26, v25), "v")) : (null));
+const el29 = ((squint_core.truth_(verse_num27)) ? (document.getElementById(`v${verse_num27??''}`)) : (null));
+if (squint_core.truth_(el29)) {
+el29.scrollIntoView(({"behavior": "smooth", "block": "start"}))};
+window._lastZKey = 0;
+true}}} else {
+if ((key3 === "b")) {
+const temp__23263__auto__30 = window._lastZKey;
+if (squint_core.truth_(temp__23263__auto__30)) {
+const last_z31 = temp__23263__auto__30;
+if (((Date.now() - last_z31) < 500)) {
+e.preventDefault();
+const v32 = squint_core.get(squint_core.deref(app_state), "verse");
+const verses33 = squint_core.get(squint_core.deref(app_state), "verses");
+const verse_num34 = ((squint_core.truth_((() => {
+const and__23718__auto__35 = squint_core.seq(verses33);
+if (squint_core.truth_(and__23718__auto__35)) {
+return ((v32 >= 0) && (v32 < squint_core.count(verses33)))} else {
+return and__23718__auto__35};
+
+})())) ? (squint_core.get(squint_core.nth(verses33, v32), "v")) : (null));
+const el36 = ((squint_core.truth_(verse_num34)) ? (document.getElementById(`v${verse_num34??''}`)) : (null));
+if (squint_core.truth_(el36)) {
+el36.scrollIntoView(({"behavior": "smooth", "block": "end"}))};
+window._lastZKey = 0;
+true}}} else {
+if ((key3 === "g")) {
+e.preventDefault();
+const now37 = Date.now();
+const temp__23182__auto__38 = window._lastGKey;
+if (squint_core.truth_(temp__23182__auto__38)) {
+const last_g39 = temp__23182__auto__38;
+if (((now37 - last_g39) < 500)) {
+goto_top_BANG_()};
+window._lastGKey = 0} else {
+window._lastGKey = now37}} else {
+if (squint_core.truth_((() => {
+const and__23718__auto__40 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__40)) {
+return (key3 === "d")} else {
+return and__23718__auto__40};
+
+})())) {
+e.preventDefault();
+scroll_half_down_BANG_()} else {
+if (squint_core.truth_((() => {
+const and__23718__auto__41 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__41)) {
+return (key3 === "u")} else {
+return and__23718__auto__41};
+
+})())) {
+e.preventDefault();
+scroll_half_up_BANG_()} else {
+if (squint_core.truth_((() => {
+const and__23718__auto__42 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__42)) {
+return (key3 === "f")} else {
+return and__23718__auto__42};
+
+})())) {
+e.preventDefault();
+scroll_full_down_BANG_()} else {
+if (squint_core.truth_((() => {
+const and__23718__auto__43 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__43)) {
+return (key3 === "b")} else {
+return and__23718__auto__43};
+
+})())) {
+e.preventDefault();
+scroll_full_up_BANG_()} else {
+if (squint_core.truth_((() => {
+const and__23718__auto__44 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__44)) {
+return (key3 === "=")} else {
+return and__23718__auto__44};
+
+})())) {
+e.preventDefault();
+change_font_size_BANG_(2)} else {
+if (squint_core.truth_((() => {
+const and__23718__auto__45 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__45)) {
+return (key3 === "-")} else {
+return and__23718__auto__45};
+
+})())) {
+e.preventDefault();
+change_font_size_BANG_(-2)} else {
+if ((key3 === "Escape")) {
+e.preventDefault();
+clear_search_BANG_();
+const input46 = document.getElementById("search-input");
+if (squint_core.truth_(input46)) {
+input46.blur()}} else {
+if ((key3 === "v")) {
+const temp__23263__auto__47 = window._numberPrefix;
+if (squint_core.truth_(temp__23263__auto__47)) {
+const np48 = temp__23263__auto__47;
+if (((Date.now() - np48.ts) < 700)) {
+e.preventDefault();
+const vnum49 = parseInt(np48.digits, 10);
+if ((vnum49 >= 1)) {
+goto_verse_num_BANG_(vnum49)};
+window._numberPrefix = null}}} else {
+if (squint_core.truth_(squint_core.re_matches(/[0-9]/, key3))) {
+e.preventDefault();
+const now50 = Date.now();
+if (squint_core.truth_(window._numberPrefix)) {
+const map__5152 = window._numberPrefix;
+const digits53 = squint_core.get(map__5152, "digits");
+const ts54 = squint_core.get(map__5152, "ts");
+if (((now50 - ts54) < 700)) {
+window._numberPrefix = ({"digits": `${digits53??''}${key3??''}`, "ts": now50})} else {
+window._numberPrefix = ({"digits": key3, "ts": now50})}} else {
+window._numberPrefix = ({"digits": key3, "ts": now50})};
+setTimeout((function () {
+const temp__23263__auto__55 = window._numberPrefix;
+if (squint_core.truth_(temp__23263__auto__55)) {
+const np56 = temp__23263__auto__55;
+if (squint_core._EQ_(np56.ts, now50)) {
+const ch57 = parseInt(np56.digits, 10);
+if (squint_core.truth_(((ch57 >= 1) && (ch57 <= get_chapter_count(squint_core.get(squint_core.deref(app_state), "book")))))) {
+goto_chapter_BANG_(ch57)};
+return window._numberPrefix = null;
+};
+};
+
+}), 700)} else {
+}}}}}}}}}}}}}}}}}}}}}}}}};
+return null;
+};
+
+};
+var init_BANG_ = function () {
+squint_core.println("NASB Bible Reader initializing...");
+document.onkeydown = handle_keydown;
+const startX1 = squint_core.atom(0);
+const startY2 = squint_core.atom(0);
+document.addEventListener("touchstart", (function (e) {
+if (squint_core.truth_((() => {
+const and__23718__auto__3 = e;
+if (squint_core.truth_(and__23718__auto__3)) {
+const and__23718__auto__4 = e.touches;
+if (squint_core.truth_(and__23718__auto__4)) {
+return (e.touches.length > 0)} else {
+return and__23718__auto__4};
+} else {
+return and__23718__auto__3};
+
+})())) {
+const touch5 = e.touches[0];
+const tag6 = e.target.tagName;
+if (squint_core.not(squint_core.contains_QMARK_((new Set (["INPUT", "TEXTAREA", "SELECT"])), tag6))) {
+squint_core.reset_BANG_(startX1, touch5.clientX);
+return squint_core.reset_BANG_(startY2, touch5.clientY);
+};
+};
+
+}), ({"passive": true}));
+document.addEventListener("touchend", (function (e) {
+if (squint_core.truth_((() => {
+const and__23718__auto__7 = e;
+if (squint_core.truth_(and__23718__auto__7)) {
+const and__23718__auto__8 = e.changedTouches;
+if (squint_core.truth_(and__23718__auto__8)) {
+return (e.changedTouches.length > 0)} else {
+return and__23718__auto__8};
+} else {
+return and__23718__auto__7};
+
+})())) {
+const touch9 = e.changedTouches[0];
+const deltaX10 = (touch9.clientX - squint_core.deref(startX1));
+const deltaY11 = (touch9.clientY - squint_core.deref(startY2));
+if (squint_core.truth_(((Math.abs(deltaX10) > 50) && (Math.abs(deltaX10) > Math.abs(deltaY11))))) {
+if ((deltaX10 < 0)) {
+return next_chapter_BANG_()} else {
+return prev_chapter_BANG_()};
+};
+};
+
+}), ({"passive": true}));
+load_highlights_BANG_();
+load_settings_BANG_();
+load_chapter_BANG_("Genesis", 1);
+render_ui();
+squint_core.add_watch(app_state, "rerender", (function (_, _12, _13, _14) {
+return render_ui();
+
+}));
+return squint_core.println("Initialized!");
+
+};
+var bible_app_obj = ({"appState": app_state, "init": init_BANG_, "loadAll": load_all_BANG_, "nextChapter": next_chapter_BANG_, "searchNext": search_next_BANG_, "gotoChapter": goto_chapter_BANG_, "loadBook": load_book_BANG_, "gotoTop": goto_top_BANG_, "searchPrev": search_prev_BANG_, "doSearch": do_search_BANG_, "clearSearch": clear_search_BANG_, "prevChapter": prev_chapter_BANG_, "gotoBottom": goto_bottom_BANG_, "nextVerse": next_verse_BANG_, "rerender": rerender_BANG_, "gotoVerseNum": goto_verse_num_BANG_, "changeFontSize": change_font_size_BANG_, "prevVerse": prev_verse_BANG_, "toggleHighlight": toggle_highlight_BANG_});
+window.bibleApp = bible_app_obj;
+init_BANG_();
+
 </script>
 </body>
 </html>
