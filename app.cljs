@@ -543,6 +543,30 @@
   (println "NASB Bible Reader initializing...")
   ;; Attach key handler
   (set! (.-onkeydown js/document) handle-keydown)
+  ;; ── Mobile swipe gestures ──
+  (let [startX (atom 0)
+        startY (atom 0)]
+    (.addEventListener js/document "touchstart"
+      (fn [e]
+        (when (and e (.-touches e) (pos? (.-length (.-touches e))))
+          (let [touch (aget (.-touches e) 0)
+                tag (.. e -target -tagName)]
+            (when (not (contains? #{"INPUT" "TEXTAREA" "SELECT"} tag))
+              (reset! startX (.-clientX touch))
+              (reset! startY (.-clientY touch))))))
+      #js{:passive true})
+    (.addEventListener js/document "touchend"
+      (fn [e]
+        (when (and e (.-changedTouches e) (pos? (.-length (.-changedTouches e))))
+          (let [touch (aget (.-changedTouches e) 0)
+                deltaX (- (.-clientX touch) @startX)
+                deltaY (- (.-clientY touch) @startY)]
+            (when (and (> (js/Math.abs deltaX) 50)
+                       (> (js/Math.abs deltaX) (js/Math.abs deltaY)))
+              (if (neg? deltaX)
+                (next-chapter!)
+                (prev-chapter!))))))
+      #js{:passive true}))
   ;; Load highlights
   (load-highlights!)
   ;; Load settings

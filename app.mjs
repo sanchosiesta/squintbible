@@ -599,11 +599,57 @@ return null;
 var init_BANG_ = function () {
 squint_core.println("NASB Bible Reader initializing...");
 document.onkeydown = handle_keydown;
+const startX1 = squint_core.atom(0);
+const startY2 = squint_core.atom(0);
+document.addEventListener("touchstart", (function (e) {
+if (squint_core.truth_((() => {
+const and__23718__auto__3 = e;
+if (squint_core.truth_(and__23718__auto__3)) {
+const and__23718__auto__4 = e.touches;
+if (squint_core.truth_(and__23718__auto__4)) {
+return (e.touches.length > 0)} else {
+return and__23718__auto__4};
+} else {
+return and__23718__auto__3};
+
+})())) {
+const touch5 = e.touches[0];
+const tag6 = e.target.tagName;
+if (squint_core.not(squint_core.contains_QMARK_((new Set (["INPUT", "TEXTAREA", "SELECT"])), tag6))) {
+squint_core.reset_BANG_(startX1, touch5.clientX);
+return squint_core.reset_BANG_(startY2, touch5.clientY);
+};
+};
+
+}), ({"passive": true}));
+document.addEventListener("touchend", (function (e) {
+if (squint_core.truth_((() => {
+const and__23718__auto__7 = e;
+if (squint_core.truth_(and__23718__auto__7)) {
+const and__23718__auto__8 = e.changedTouches;
+if (squint_core.truth_(and__23718__auto__8)) {
+return (e.changedTouches.length > 0)} else {
+return and__23718__auto__8};
+} else {
+return and__23718__auto__7};
+
+})())) {
+const touch9 = e.changedTouches[0];
+const deltaX10 = (touch9.clientX - squint_core.deref(startX1));
+const deltaY11 = (touch9.clientY - squint_core.deref(startY2));
+if (squint_core.truth_(((Math.abs(deltaX10) > 50) && (Math.abs(deltaX10) > Math.abs(deltaY11))))) {
+if ((deltaX10 < 0)) {
+return next_chapter_BANG_()} else {
+return prev_chapter_BANG_()};
+};
+};
+
+}), ({"passive": true}));
 load_highlights_BANG_();
 load_settings_BANG_();
 load_chapter_BANG_("Genesis", 1);
 render_ui();
-squint_core.add_watch(app_state, "rerender", (function (_, _1, _2, _3) {
+squint_core.add_watch(app_state, "rerender", (function (_, _12, _13, _14) {
 return render_ui();
 
 }));

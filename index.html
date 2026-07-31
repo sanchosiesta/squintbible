@@ -647,6 +647,28 @@ return null;
 var init_BANG_ = function () {
 squint_core.println("NASB Bible Reader initializing...");
 document.onkeydown = handle_keydown;
+
+// ── Mobile swipe gestures ──
+let _swipeStartX = 0, _swipeStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  const tag = (e.target.tagName || '').toUpperCase();
+  if (['INPUT','TEXTAREA','SELECT'].includes(tag)) return;
+  if (e.touches && e.touches.length > 0) {
+    _swipeStartX = e.touches[0].clientX;
+    _swipeStartY = e.touches[0].clientY;
+  }
+}, {passive: true});
+document.addEventListener('touchend', (e) => {
+  if (e.changedTouches && e.changedTouches.length > 0) {
+    const dx = e.changedTouches[0].clientX - _swipeStartX;
+    const dy = e.changedTouches[0].clientY - _swipeStartY;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) next_chapter_BANG_();
+      else prev_chapter_BANG_();
+    }
+  }
+}, {passive: true});
+
 load_highlights_BANG_();
 load_settings_BANG_();
 load_chapter_BANG_("Genesis", 1);
