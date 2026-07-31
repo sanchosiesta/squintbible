@@ -172,7 +172,7 @@ squint_core.swap_BANG_(app_state, squint_core.assoc, "verse", verse_idx2);
 const verse_num5 = squint_core.get(squint_core.nth(verses3, verse_idx2), "v");
 const el6 = document.getElementById(`v${verse_num5??''}`);
 if (squint_core.truth_(el6)) {
-el6.scrollIntoView(({"behavior": "smooth", "block": "center"}))};
+el6.scrollIntoView(({"behavior": "instant", "block": "center"}))};
 return squint_core.println("Restored verse position:", book, ch, "verse", verse_idx2);
 };
 };
@@ -217,7 +217,7 @@ if (squint_core.truth_(row)) {
 const verses2 = row.verses;
 const first_verse_idx3 = (() => {
 const or__23674__auto__4 = squint_core.first(squint_core.keep_indexed((function (_PERCENT_1, _PERCENT_2) {
-if ((squint_core.get(_PERCENT_2, "h") === 0)) {
+if ((_PERCENT_2["h"] === 0)) {
 return _PERCENT_1;
 };
 
@@ -247,11 +247,14 @@ const n2 = squint_core.count(verses1);
 if ((n2 > 0)) {
 const i3 = squint_core.max(0, squint_core.min((n2 - 1), idx));
 squint_core.swap_BANG_(app_state, squint_core.assoc, "verse", i3);
+return requestAnimationFrame((function () {
 const verse_num4 = squint_core.get_in(squint_core.deref(app_state), ["verses", squint_core.get(squint_core.deref(app_state), "verse"), "v"]);
 const el5 = document.getElementById(`v${verse_num4??''}`);
 if (squint_core.truth_(el5)) {
-return el5.scrollIntoView(({"behavior": "smooth", "block": "center"}));
+return el5.scrollIntoView(({"behavior": "instant", "block": "center"}));
 };
+
+}));
 };
 
 };
@@ -379,7 +382,7 @@ var goto_top_BANG_ = function () {
 const verses1 = squint_core.get(squint_core.deref(app_state), "verses");
 if (squint_core.truth_(squint_core.seq(verses1))) {
 const first_non_heading2 = squint_core.first(squint_core.keep_indexed((function (_PERCENT_1, _PERCENT_2) {
-if ((squint_core.get(_PERCENT_2, "h") === 0)) {
+if ((_PERCENT_2["h"] === 0)) {
 return _PERCENT_1;
 };
 
@@ -809,7 +812,7 @@ return and__23718__auto__16};
 })())) ? (squint_core.get(squint_core.nth(verses14, v13), "v")) : (null));
 const el17 = ((squint_core.truth_(verse_num15)) ? (document.getElementById(`v${verse_num15??''}`)) : (null));
 if (squint_core.truth_(el17)) {
-el17.scrollIntoView(({"behavior": "smooth", "block": "center"}))}};
+el17.scrollIntoView(({"behavior": "instant", "block": "center"}))}};
 window._lastZKey = 0} else {
 window._lastZKey = now10;
 setTimeout((function () {
@@ -825,7 +828,7 @@ return and__23718__auto__21};
 })())) ? (squint_core.get(squint_core.nth(verses19, v18), "v")) : (null));
 const el22 = ((squint_core.truth_(verse_num20)) ? (document.getElementById(`v${verse_num20??''}`)) : (null));
 if (squint_core.truth_(el22)) {
-el22.scrollIntoView(({"behavior": "smooth", "block": "start"}))};
+el22.scrollIntoView(({"behavior": "instant", "block": "start"}))};
 return window._lastZKey = 0;
 };
 
@@ -847,7 +850,7 @@ return and__23718__auto__28};
 })())) ? (squint_core.get(squint_core.nth(verses26, v25), "v")) : (null));
 const el29 = ((squint_core.truth_(verse_num27)) ? (document.getElementById(`v${verse_num27??''}`)) : (null));
 if (squint_core.truth_(el29)) {
-el29.scrollIntoView(({"behavior": "smooth", "block": "start"}))};
+el29.scrollIntoView(({"behavior": "instant", "block": "start"}))};
 window._lastZKey = 0;
 true}}} else {
 if ((key3 === "b")) {
@@ -867,7 +870,7 @@ return and__23718__auto__35};
 })())) ? (squint_core.get(squint_core.nth(verses33, v32), "v")) : (null));
 const el36 = ((squint_core.truth_(verse_num34)) ? (document.getElementById(`v${verse_num34??''}`)) : (null));
 if (squint_core.truth_(el36)) {
-el36.scrollIntoView(({"behavior": "smooth", "block": "end"}))};
+el36.scrollIntoView(({"behavior": "instant", "block": "end"}))};
 window._lastZKey = 0;
 true}}} else {
 if ((key3 === "g")) {

@@ -167,7 +167,7 @@
                        (swap! app-state assoc :verse verse-idx)
                        (let [verse-num (:v (nth verses verse-idx))
                              el (.getElementById js/document (str "v" verse-num))]
-                         (when el (.scrollIntoView el #js {:behavior "smooth" :block "center"})))
+                         (when el (.scrollIntoView el #js {:behavior "instant" :block "center"})))
                        (println "Restored verse position:" book ch "verse" verse-idx)))))))))
 
 ;; ── Load highlights from Dexie ──
@@ -201,7 +201,8 @@
                  (if row
                    (let [verses (.-verses row)
                          ;; BUG 2 FIX: find first non-heading verse (h=0) instead of always 0
-                         first-verse-idx (or (first (keep-indexed #(when (= (:h %2) 0) %1) verses)) 0)]
+                         ;; Use aget because Dexie returns raw JS objects, not CLJS maps
+                         first-verse-idx (or (first (keep-indexed #(when (zero? (aget %2 "h")) %1) verses)) 0)]
                      (swap! app-state assoc
                             :book book :chapter ch :verse first-verse-idx :verses verses)
                      (println "Displaying" book ch "-" (count verses) "entries (first verse idx:" first-verse-idx ")")
@@ -217,9 +218,13 @@
     (when (> n 0)
       (let [i (max 0 (min (dec n) idx))]
         (swap! app-state assoc :verse i))
-      (let [verse-num (get-in @app-state [:verses (:verse @app-state) :v])
-            el (.getElementById js/document (str "v" verse-num))]
-        (when el (.scrollIntoView el #js {:behavior "smooth" :block "center"}))))))
+      ;; MILESTONE 1: Defer scrollIntoView with requestAnimationFrame so the
+      ;; atom-watch re-render completes DOM rebuild FIRST, eliminating flicker.
+      (js/requestAnimationFrame
+        (fn []
+          (let [verse-num (get-in @app-state [:verses (:verse @app-state) :v])
+                el (.getElementById js/document (str "v" verse-num))]
+            (when el (.scrollIntoView el #js {:behavior "instant" :block "center"}))))))))
 
 ;; ── Next/previous verse ──
 (defn next-verse! []
@@ -318,7 +323,8 @@
   (let [verses (:verses @app-state)]
     (when (seq verses)
       ;; BUG 4 FIX: skip heading verses, go to first non-heading verse
-      (let [first-non-heading (first (keep-indexed #(when (= (:h %2) 0) %1) verses))]
+      ;; Use aget because verses may be raw JS objects from Dexie
+      (let [first-non-heading (first (keep-indexed #(when (zero? (aget %2 "h")) %1) verses))]
         (goto-verse! (or first-non-heading 0))))))
 
 (defn goto-bottom! []
@@ -707,7 +713,7 @@
                                       verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
                                                   (:v (nth verses v)))
                                       el (when verse-num (.getElementById js/document (str "v" verse-num)))]
-                                  (when el (.scrollIntoView el #js {:behavior "smooth" :block "center"}))))
+                                  (when el (.scrollIntoView el #js {:behavior "instant" :block "center"}))))
                               (set! (.-_lastZKey js/window) 0))
                             ;; First 'z': start timer; default single-z = zt (scroll to top)
                             (do
@@ -720,7 +726,7 @@
                                           verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
                                                       (:v (nth verses v)))
                                           el (when verse-num (.getElementById js/document (str "v" verse-num)))]
-                                      (when el (.scrollIntoView el #js {:behavior "smooth" :block "start"})))
+                                      (when el (.scrollIntoView el #js {:behavior "instant" :block "start"})))
                                     (set! (.-_lastZKey js/window) 0)))
                                 500)))))
           ;; t after z → zt: scroll current verse to top
@@ -732,7 +738,7 @@
                                 verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
                                             (:v (nth verses v)))
                                 el (when verse-num (.getElementById js/document (str "v" verse-num)))]
-                            (when el (.scrollIntoView el #js {:behavior "smooth" :block "start"})))
+                            (when el (.scrollIntoView el #js {:behavior "instant" :block "start"})))
                           (set! (.-_lastZKey js/window) 0)
                           true))
           ;; b after z → zb: scroll current verse to bottom
@@ -744,7 +750,7 @@
                                 verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
                                             (:v (nth verses v)))
                                 el (when verse-num (.getElementById js/document (str "v" verse-num)))]
-                            (when el (.scrollIntoView el #js {:behavior "smooth" :block "end"})))
+                            (when el (.scrollIntoView el #js {:behavior "instant" :block "end"})))
                           (set! (.-_lastZKey js/window) 0)
                           true))
           ;; g - start of gg sequence
