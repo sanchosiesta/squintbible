@@ -237,7 +237,7 @@
 (defn scroll-full-up! []
   (.scrollBy js/window 0 (- (.-innerHeight js/window))))
 
-;; ── Go to top/bottom of chapter ──
+;; ── Go to top/bottom of chapter & specific verse ──
 (defn goto-top! []
   (let [verses (:verses @app-state)]
     (when (seq verses)
@@ -247,6 +247,19 @@
   (let [verses (:verses @app-state)]
     (when (seq verses)
       (goto-verse! (dec (count verses))))))
+
+(defn goto-verse-num! [verse-num]
+  (let [verses (:verses @app-state)]
+    (if (seq verses)
+      (let [idx (first (keep-indexed
+                         (fn [i v] (when (= (:v v) verse-num) i))
+                         verses))]
+        (if idx
+          (do (goto-verse! idx)
+              (save-verse-pos!)
+              (println "Jumped to verse" verse-num))
+          (println "Verse" verse-num "not found in this chapter")))
+      (println "No verses loaded"))))
 
 ;; ── Toggle highlight on a verse ──
 (defn toggle-highlight! [verse-num]
@@ -599,6 +612,14 @@
           (= key "Escape") (do (.preventDefault e) (clear-search!)
                                (let [input (.getElementById js/document "search-input")]
                                  (when input (.blur input))))
+          ;; v after number prefix → jump to verse number
+          (= key "v") (when-let [np (.-_numberPrefix js/window)]
+                        (when (< (- (.now js/Date) (.-ts np)) 700)
+                          (.preventDefault e)
+                          (let [vnum (js/parseInt (.-digits np) 10)]
+                            (when (>= vnum 1)
+                              (goto-verse-num! vnum)))
+                          (set! (.-_numberPrefix js/window) nil)))
           ;; Number prefix for chapter jump
           (re-matches #"[0-9]" key) (do
                                       (.preventDefault e)
@@ -682,6 +703,7 @@
        :clearSearch clear-search!
        :gotoTop goto-top!
        :gotoBottom goto-bottom!
+       :gotoVerseNum goto-verse-num!
        :rerender rerender!
        :init init!})
 
