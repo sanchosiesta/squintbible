@@ -12,7 +12,6 @@
   .verse-current{background:#e3edf7!important;border-left:3px solid #3498db}
   .highlighted{background:#fff3a8!important}
   .verse-current.highlighted{background:#c8e6c9!important;border-left:3px solid #2e7d32}
-  .search-hl{background:#e91e63;color:white;padding:0 2px;border-radius:2px}
 </style>
 </head>
 <body>
@@ -26,21 +25,65 @@ link1.rel = "stylesheet";
 link1.href = "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css";
 document.head.appendChild(link1);
 let style2 = document.createElement("style");
-style2.textContent = `${".verse-current { background: #e3edf7 !important; border-left: 3px solid #3498db; }"}${".highlighted { background: #fff3a8 !important; }"}${".verse-current.highlighted { background: #c8e6c9 !important; border-left: 3px solid #2e7d32; }"}${"mark { background: #ffb6c1; border-radius: 2px; padding: 0 1px; }"}`;
+style2.textContent = `${"html, body { overflow: auto !important; height: 100%; }"}${".verse-current { background: #e3edf7 !important; border-left: 3px solid #3498db; }"}${".highlighted { background: #fff3a8 !important; }"}${".verse-current.highlighted { background: #c8e6c9 !important; border-left: 3px solid #2e7d32; }"}${"mark { background: #ffb6c1; border-radius: 2px; padding: 0 1px; }"}`;
 document.head.appendChild(style2);
 var books_list = ["Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel", "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra", "Nehemiah", "Esther", "Job", "Psalm", "Proverbs", "Ecclesiastes", "Song of Solomon", "Isaiah", "Jeremiah", "Lamentations", "Ezekiel", "Daniel", "Hosea", "Joel", "Amos", "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk", "Zephaniah", "Haggai", "Zechariah", "Malachi", "Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians", "1 Timothy", "2 Timothy", "Titus", "Philemon", "Hebrews", "James", "1 Peter", "2 Peter", "1 John", "2 John", "3 John", "Jude", "Revelation"];
 var chapter_counts = ({"Jude": 1, "1 Thessalonians": 5, "2 Thessalonians": 3, "Psalm": 150, "Revelation": 22, "Philippians": 4, "Judges": 21, "Galatians": 6, "2 Timothy": 4, "Ecclesiastes": 12, "Lamentations": 5, "2 Kings": 25, "Leviticus": 27, "Philemon": 1, "Joshua": 24, "Jeremiah": 52, "Romans": 16, "1 Peter": 5, "Zephaniah": 3, "Ruth": 4, "1 Kings": 22, "3 John": 1, "James": 5, "Nehemiah": 13, "1 Timothy": 6, "Colossians": 4, "2 Peter": 3, "2 Samuel": 24, "Zechariah": 14, "2 John": 1, "Daniel": 12, "Obadiah": 1, "Matthew": 28, "Luke": 24, "Hosea": 14, "Mark": 16, "John": 21, "Titus": 3, "Exodus": 40, "Nahum": 3, "Esther": 10, "Proverbs": 31, "Isaiah": 66, "Deuteronomy": 34, "Ezekiel": 48, "1 Samuel": 31, "Amos": 9, "Acts": 28, "Malachi": 4, "Joel": 3, "Hebrews": 13, "Numbers": 36, "1 Chronicles": 29, "1 John": 5, "Ezra": 10, "Ephesians": 6, "Job": 42, "Haggai": 2, "1 Corinthians": 16, "Song of Solomon": 8, "Genesis": 50, "Habakkuk": 3, "2 Chronicles": 36, "2 Corinthians": 13, "Micah": 7, "Jonah": 4});
 squint_core.println("Dexie global:", typeof Dexie);
 var bible_db = (new Dexie("BibleDB"));
 bible_db.version(1).stores(squint_core.clj__GT_js(({"verses": "&ref", "highlights": "&verseRef", "settings": "&keyName"})));
-var app_state = squint_core.atom(({"verse": 0, "font-size": 18, "search-term": "", "verses": [], "highlights": (new Set ([])), "book": "Genesis", "total-books": 66, "load-progress": 0, "chapter": 1, "count-loaded": 0, "loading": false, "search-results": [], "search-idx": -1}));
+var app_state = squint_core.atom(({"verse": 0, "font-size": 18, "search-term": "", "verses": [], "highlights": (new Set ([])), "book": "Genesis", "total-books": 66, "load-progress": 0, "prev-book": null, "chapter": 1, "count-loaded": 0, "loading": false, "prev-chapter": null, "search-results": [], "search-idx": -1, "prev-verse": null}));
 var book__GT_filename = function (book) {
 return `${"data/"}${book.replace((new RegExp(" ", "g")), "_")??''}${".json"}`;
 
 };
 var clean_text = function (s) {
 if (squint_core.truth_(squint_core.string_QMARK_(s))) {
-return s.replace((new RegExp("\\*[a-z]+", "g")), "")};
+return s.replace((new RegExp("\\*[a-z]+", "g")), "")} else {
+return s};
+
+};
+var highlight_matches = function (text, term) {
+"Wrap occurrences of term in text with <mark> tags, case-insensitive.\n   Returns text unchanged if no match, or a [:span ...] hiccup vector.";
+if (squint_core.truth_((() => {
+const or__23674__auto__1 = squint_core.empty_QMARK_(term);
+if (squint_core.truth_(or__23674__auto__1)) {
+return or__23674__auto__1} else {
+return squint_core.not(squint_core.string_QMARK_(text))};
+
+})())) {
+return text} else {
+const lo2 = text.toLowerCase();
+const lt3 = term.toLowerCase();
+const tl4 = squint_core.count(term);
+let start5 = 0;
+let parts6 = [];
+while(true){
+if ((start5 >= squint_core.count(text))) {
+if ((squint_core.count(parts6) === 1)) {
+return squint_core.first(parts6)} else {
+return squint_core.into(["span"], parts6)}} else {
+const idx7 = lo2.indexOf(lt3, start5);
+if ((idx7 < 0)) {
+let G__8 = squint_core.count(text);
+let G__9 = squint_core.conj(parts6, text.substring(start5));
+start5 = G__8;
+parts6 = G__9;
+continue;
+} else {
+const parts10 = (((idx7 > start5)) ? (squint_core.conj(parts6, text.substring(start5, idx7))) : (parts6));
+const parts11 = squint_core.conj(parts10, ["mark", text.substring(idx7, (idx7 + tl4))]);
+let G__12 = (idx7 + tl4);
+let G__13 = parts11;
+start5 = G__12;
+parts6 = G__13;
+continue;
+};
+};
+;break;
+}
+;
+};
 
 };
 var read_verse_BANG_ = function () {
@@ -377,6 +420,24 @@ return squint_core.println("Verse", verse_num, "not found in this chapter")};
 return squint_core.println("No verses loaded")};
 
 };
+var toggle_verse_position_BANG_ = function () {
+const map__12 = squint_core.deref(app_state);
+const book3 = squint_core.get(map__12, "book");
+const chapter4 = squint_core.get(map__12, "chapter");
+const verse5 = squint_core.get(map__12, "verse");
+const prev_book6 = squint_core.get(map__12, "prev-book");
+const prev_chapter7 = squint_core.get(map__12, "prev-chapter");
+const prev_verse8 = squint_core.get(map__12, "prev-verse");
+if ((prev_verse8 == null)) {
+return squint_core.swap_BANG_(app_state, squint_core.assoc, "prev-book", book3, "prev-chapter", chapter4, "prev-verse", verse5)} else {
+const temp_book9 = book3;
+const temp_chapter10 = chapter4;
+const temp_verse11 = verse5;
+squint_core.swap_BANG_(app_state, squint_core.assoc, "book", prev_book6, "chapter", prev_chapter7, "verse", prev_verse8, "verses", [], "prev-book", temp_book9, "prev-chapter", temp_chapter10, "prev-verse", temp_verse11);
+return load_chapter_BANG_(prev_book6, prev_chapter7);
+};
+
+};
 var toggle_highlight_BANG_ = function (verse_num) {
 const book1 = squint_core.get(squint_core.deref(app_state), "book");
 const ch2 = squint_core.get(squint_core.deref(app_state), "chapter");
@@ -643,7 +704,7 @@ var render_ui = function () {
 const el1 = document.getElementById("app");
 if (squint_core.truth_(el1)) {
 el1.innerHTML = "";
-rg.render(el1, ["div", render_navbar(), render_search_bar(), ["div", ({"style": "margin-top: 8px; padding: 0 8px 60px 8px;"}), render_verses()], render_progress_overlay(), render_status_bar()]);
+rg.render(el1, ["div", render_navbar(), render_search_bar(), ["div", ({"style": "margin-top: 8px; padding: 0 8px 60px 8px; overflow-y: auto; height: calc(100vh - 200px);"}), render_verses()], render_progress_overlay(), render_status_bar()]);
 return setTimeout((function () {
 const book_sel2 = document.querySelector("select");
 if (squint_core.truth_(book_sel2)) {
@@ -701,6 +762,9 @@ const v7 = squint_core.nth(verses4, idx5);
 const vnum8 = squint_core.get(v7, "v");
 if (squint_core.truth_(vnum8)) {
 toggle_highlight_BANG_(vnum8)}}} else {
+if ((key3 === "%")) {
+e.preventDefault();
+toggle_verse_position_BANG_()} else {
 if ((key3 === "R")) {
 e.preventDefault();
 read_verse_BANG_()} else {
@@ -909,7 +973,7 @@ return window._numberPrefix = null;
 };
 
 }), 700)} else {
-}}}}}}}}}}}}}}}}}}}}}}}}};
+}}}}}}}}}}}}}}}}}}}}}}}}}};
 return null;
 };
 

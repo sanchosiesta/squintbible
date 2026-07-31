@@ -80,6 +80,7 @@
 (defn clean-text [s]
   (if (string? s)
     (.replace s (js/RegExp. "\\*[a-z]+" "g") "")
+    s))
 
 ;; ── Highlight search-term matches within text, returns hiccup ──
 (defn highlight-matches [text term]
@@ -102,8 +103,6 @@
                             parts)
                     parts (conj parts [:mark (.substring text idx (+ idx tl))])]
                 (recur (+ idx tl) parts)))))))))
-
-    s))
 
 ;; ── Text-to-speech: read current verse aloud ──
 (defn read-verse! []
