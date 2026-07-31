@@ -205,6 +205,15 @@ return load_chapter_BANG_(book1, ch);
 };
 
 };
+var goto_book_BANG_ = function (book) {
+"Jump to a specific book at chapter 1. Resets search and verse position.";
+if (squint_core.truth_(squint_core.contains_QMARK_(chapter_counts, book))) {
+squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book, "chapter", 1, "verse", 0, "verses", [], "search-term", "", "search-results", [], "search-idx", -1);
+load_chapter_BANG_(book, 1);
+return squint_core.println("Switched to", book);
+};
+
+};
 var next_chapter_BANG_ = function () {
 const book1 = squint_core.get(squint_core.deref(app_state), "book");
 const ch2 = squint_core.get(squint_core.deref(app_state), "chapter");
@@ -482,53 +491,57 @@ const book3 = squint_core.get(map__12, "book");
 const chapter4 = squint_core.get(map__12, "chapter");
 const font_size5 = squint_core.get(map__12, "font-size");
 const book_chapters6 = squint_core.range(1, (get_chapter_count(book3) + 1));
-const chapters_str7 = `${book3??''}${" "}${chapter4??''}`;
-return ["nav", ({"class": "navbar is-dark is-fixed-top", "style": "height: 48px; min-height: 48px;"}), ["div", ({"class": "navbar-brand", "style": "min-height: 48px;"}), ["span", ({"class": "navbar-item", "style": "font-weight: bold; padding: 0 12px; height: 48px;"}), "NASB Bible Reader"]], ["div", ({"class": "navbar-menu is-active", "style": "height: 48px;"}), ["div", ({"class": "navbar-start", "style": "height: 48px; align-items: center;"}), ["div", ({"class": "navbar-item", "style": "padding: 4px;"}), ["div", ({"class": "select is-small"}), ["select", ({"value": book3, "onchange": (function (e) {
-const new_book8 = e.target.value;
-squint_core.swap_BANG_(app_state, squint_core.assoc, "book", new_book8, "chapter", 1, "verse", 0, "verses", [], "search-term", "", "search-results", [], "search-idx", -1);
-return load_chapter_BANG_(new_book8, 1);
-
-})}), squint_core.lazy((function* () {
-for (let G__9 of squint_core.iterable(books_list)) {
-const b10 = G__9;
-yield ["option", ({"value": b10, "key": b10}), b10];
-}
-return null;
-
-}))]]], ["div", ({"class": "navbar-item", "style": "padding: 4px;"}), ["div", ({"class": "select is-small"}), ["select", ({"value": `${chapter4??''}`, "onchange": (function (e) {
-const new_ch11 = parseInt(e.target.value, 10);
-return goto_chapter_BANG_(new_ch11);
-
-})}), squint_core.lazy((function* () {
-for (let G__12 of squint_core.iterable(book_chapters6)) {
-const c13 = G__12;
-yield ["option", ({"value": `${c13??''}`, "key": c13}), c13];
-}
-return null;
-
-}))]]], ["div", ({"class": "navbar-item", "style": "padding: 4px;"}), ["button", ({"class": "button is-small is-light", "onclick": (function (_) {
+const font_minus_btn7 = ["button", ({"class": "button is-small is-light", "onclick": (function (_) {
 return change_font_size_BANG_(-2);
 
-}), "title": "Decrease font"}), "A-"]], ["div", ({"class": "navbar-item", "style": "padding: 4px;"}), ["button", ({"class": "button is-small is-light", "onclick": (function (_) {
+}), "title": "Decrease font"}), "A-"];
+const font_plus_btn8 = ["button", ({"class": "button is-small is-light", "onclick": (function (_) {
 return change_font_size_BANG_(2);
 
-}), "title": "Increase font"}), "A+"]], ["div", ({"class": "navbar-item", "style": "padding: 4px;"}), ["button", ({"class": "button is-small is-light", "onclick": (function (_) {
+}), "title": "Increase font"}), "A+"];
+const speaker_btn9 = ["button", ({"class": "button is-small is-light", "onclick": (function (_) {
 return read_verse_BANG_();
 
-}), "title": "Read verse aloud (R)"}), "Speaker"]], ["div", ({"class": "navbar-item", "style": "padding: 4px;"}), ["button", ({"class": "button is-small is-info", "onclick": (function (_) {
-const input14 = document.getElementById("search-input");
-if (squint_core.truth_(input14)) {
-input14.focus();
-return input14.select();
+}), "title": "Read verse aloud (R)"}), "🔊"];
+const search_btn10 = ["button", ({"class": "button is-small is-info", "onclick": (function (_) {
+const input11 = document.getElementById("search-input");
+if (squint_core.truth_(input11)) {
+input11.focus();
+return input11.select();
 };
 
-})}), "/ Search"]], ["div", ({"class": "navbar-item", "style": "padding: 4px;"}), ["button", ({"class": "button is-small is-primary", "onclick": (function (_) {
+})}), "🔍"];
+const load_book_btn12 = ["button", ({"class": "button is-small is-primary", "onclick": (function (_) {
 return load_book_BANG_(book3);
 
-})}), "Load Book"]], ["div", ({"class": "navbar-item", "style": "padding: 4px;"}), ["button", ({"class": "button is-small is-warning", "onclick": (function (_) {
+})}), "Load Book"];
+const load_all_btn13 = ["button", ({"class": "button is-small is-warning", "onclick": (function (_) {
 return load_all_BANG_();
 
-})}), "Load All"]]]]];
+})}), "Load All"];
+const wrap_btn14 = (function (btn) {
+return ["div", ({"class": "navbar-item", "style": "padding: 4px;"}), btn];
+
+});
+const book_select15 = ["div", ({"class": "navbar-item", "style": "padding: 4px;"}), ["div", ({"class": "select is-small"}), squint_core.into(["select", ({"value": book3, "onchange": (function (e) {
+const new_book16 = e.target.value;
+squint_core.swap_BANG_(app_state, squint_core.assoc, "book", new_book16, "chapter", 1, "verse", 0, "verses", [], "search-term", "", "search-results", [], "search-idx", -1);
+return load_chapter_BANG_(new_book16, 1);
+
+})})], squint_core.mapv((function (b) {
+return ["option", ({"value": b, "key": b}), b];
+
+}), books_list))]];
+const chapter_select17 = ["div", ({"class": "navbar-item", "style": "padding: 4px;"}), ["div", ({"class": "select is-small"}), squint_core.into(["select", ({"value": `${chapter4??''}`, "onchange": (function (e) {
+const new_ch18 = parseInt(e.target.value, 10);
+return goto_chapter_BANG_(new_ch18);
+
+})})], squint_core.mapv((function (c) {
+return ["option", ({"value": `${c??''}`, "key": c}), c];
+
+}), book_chapters6))]];
+const nav_brand19 = ["div", ({"class": "navbar-brand", "style": "min-height: 48px;"}), ["span", ({"class": "navbar-item", "style": "font-weight: bold; padding: 0 12px; height: 48px;"}), "NASB"]];
+return squint_core.into(["div"], [["nav", ({"class": "navbar is-dark is-fixed-top is-hidden-touch", "style": "height: 48px; min-height: 48px;"}), nav_brand19, ["div", ({"class": "navbar-menu is-active", "style": "height: 48px;"}), squint_core.into(["div", ({"class": "navbar-start", "style": "height: 48px; align-items: center;"})], [book_select15, chapter_select17, wrap_btn14(font_minus_btn7), wrap_btn14(font_plus_btn8), wrap_btn14(speaker_btn9), wrap_btn14(search_btn10), wrap_btn14(load_book_btn12), wrap_btn14(load_all_btn13)])]], ["nav", ({"class": "navbar is-dark is-hidden-desktop", "style": "height: 48px; min-height: 48px; position: fixed; top: 0; left: 0; right: 0; z-index: 31;"}), nav_brand19, ["div", ({"class": "navbar-menu is-active", "style": "height: 48px;"}), squint_core.into(["div", ({"class": "navbar-start", "style": "height: 48px; align-items: center;"})], [book_select15, chapter_select17, wrap_btn14(load_book_btn12), wrap_btn14(load_all_btn13)])]], ["nav", ({"class": "navbar is-dark is-hidden-desktop", "style": "height: 48px; min-height: 48px; position: fixed; top: 48px; left: 0; right: 0; z-index: 30;"}), ["div", ({"class": "navbar-menu is-active", "style": "height: 48px;"}), squint_core.into(["div", ({"class": "navbar-start", "style": "height: 48px; align-items: center;"})], [wrap_btn14(font_minus_btn7), wrap_btn14(font_plus_btn8), wrap_btn14(speaker_btn9), wrap_btn14(search_btn10)])]]]);
 
 };
 var render_search_bar = function () {
@@ -536,7 +549,7 @@ const map__12 = squint_core.deref(app_state);
 const search_term3 = squint_core.get(map__12, "search-term");
 const search_results4 = squint_core.get(map__12, "search-results");
 const search_idx5 = squint_core.get(map__12, "search-idx");
-return ["div", ({"style": "padding: 4px 8px; margin-top: 48px; display: flex; gap: 8px; align-items: center;"}), ["input", ({"id": "search-input", "class": "input is-small", "type": "text", "placeholder": "Search current chapter... (n/N to navigate)", "value": search_term3, "style": "max-width: 400px;", "oninput": (function (e) {
+const input_el6 = ["input", ({"id": "search-input", "class": "input is-small", "type": "text", "placeholder": "Search current chapter... (n/N to navigate)", "value": search_term3, "style": "max-width: 400px;", "oninput": (function (e) {
 return do_search_BANG_(e.target.value);
 
 }), "onkeydown": (function (e) {
@@ -548,7 +561,9 @@ clear_search_BANG_();
 return e.target.blur();
 };
 
-})})], ((squint_core.truth_(squint_core.seq(search_results4))) ? (["span", ({"class": "tag is-info"}), `${(search_idx5 + 1)}${"/"}${squint_core.count(search_results4)??''}`]) : (null))];
+})})];
+const results_tag7 = ((squint_core.truth_(squint_core.seq(search_results4))) ? (["span", ({"class": "tag is-info"}), `${(search_idx5 + 1)}${"/"}${squint_core.count(search_results4)??''}`]) : (null));
+return squint_core.into(["div"], [["div", ({"class": "is-hidden-touch", "style": "padding: 4px 8px; margin-top: 48px; display: flex; gap: 8px; align-items: center;"}), input_el6, results_tag7], ["div", ({"class": "is-hidden-desktop", "style": "padding: 4px 8px; margin-top: 96px; display: flex; gap: 8px; align-items: center;"}), input_el6, results_tag7]]);
 
 };
 var render_progress_overlay = function () {
