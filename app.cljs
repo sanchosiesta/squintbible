@@ -247,6 +247,28 @@
 (defn scroll-full-up! []
   (.scrollBy js/window 0 (- (.-innerHeight js/window))))
 
+;; ── Update current verse from viewport position ──
+(defn update-current-verse-from-viewport! []
+  (let [verse-els (.querySelectorAll js/document "[id^=v]")
+        viewport-center (/ (.-innerHeight js/window) 2)
+        closest (atom nil)
+        closest-dist (atom ##Inf)]
+    (dotimes [i (.-length verse-els)]
+      (let [el (.item verse-els i)
+            rect (.getBoundingClientRect el)
+            el-center (+ (.-top rect) (/ (.-height rect) 2))
+            dist (js/Math.abs (- el-center viewport-center))]
+        (when (< dist @closest-dist)
+          (reset! closest-dist dist)
+          (reset! closest el))))
+    (when-let [closest-el @closest]
+      (let [verse-num (js/parseInt (.substring (.-id closest-el) 1) 10)
+            verses (:verses @app-state)
+            idx (first (keep-indexed #(when (= (:v %2) verse-num) %1) verses))]
+        (when idx
+          (swap! app-state assoc :verse idx)
+          (save-verse-pos!))))))
+
 ;; ── Go to top/bottom of chapter & specific verse ──
 (defn goto-top! []
   (let [verses (:verses @app-state)]
@@ -534,6 +556,20 @@
           (= key "j") (do (.preventDefault e) (next-verse!))
           ;; k - previous verse
           (= key "k") (do (.preventDefault e) (prev-verse!))
+          ;; Enter - scroll half page down
+          (= key "Enter") (do (.preventDefault e) (scroll-half-down!) (update-current-verse-from-viewport!))
+          ;; Backspace - scroll half page up
+          (= key "Backspace") (do (.preventDefault e) (scroll-half-up!) (update-current-verse-from-viewport!))
+          ;; Space - toggle highlight on current verse
+          (= key " ") (do
+                        (.preventDefault e)
+                        (let [verses (:verses @app-state)
+                              idx (:verse @app-state)]
+                          (when (and (seq verses) (>= idx 0) (< idx (count verses)))
+                            (let [v (nth verses idx)
+                                  vnum (:v v)]
+                              (when vnum
+                                (toggle-highlight! vnum))))))
           ;; R - read verse aloud
           (= key "R") (do (.preventDefault e) (read-verse!))
           ;; h - previous chapter

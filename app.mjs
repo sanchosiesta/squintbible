@@ -251,6 +251,44 @@ var scroll_full_up_BANG_ = function () {
 return window.scrollBy(0, (-(window.innerHeight)));
 
 };
+var update_current_verse_from_viewport_BANG_ = function () {
+const verse_els1 = document.querySelectorAll("[id^=v]");
+const viewport_center2 = (window.innerHeight / 2);
+const closest3 = squint_core.atom(null);
+const closest_dist4 = squint_core.atom(Infinity);
+const n45 = verse_els1.length;
+let i6 = 0;
+for (;i6<n45;i6++) {
+(() => {
+const el7 = verse_els1.item(i6);
+const rect8 = el7.getBoundingClientRect();
+const el_center9 = (rect8.top + (rect8.height / 2));
+const dist10 = Math.abs((el_center9 - viewport_center2));
+if ((dist10 < squint_core.deref(closest_dist4))) {
+squint_core.reset_BANG_(closest_dist4, dist10);
+return squint_core.reset_BANG_(closest3, el7);
+};
+
+})()
+};
+const temp__23263__auto__11 = squint_core.deref(closest3);
+if (squint_core.truth_(temp__23263__auto__11)) {
+const closest_el12 = temp__23263__auto__11;
+const verse_num13 = parseInt(closest_el12.id.substring(1), 10);
+const verses14 = squint_core.get(squint_core.deref(app_state), "verses");
+const idx15 = squint_core.first(squint_core.keep_indexed((function (_PERCENT_1, _PERCENT_2) {
+if (squint_core._EQ_(squint_core.get(_PERCENT_2, "v"), verse_num13)) {
+return _PERCENT_1;
+};
+
+}), verses14));
+if (squint_core.truth_(idx15)) {
+squint_core.swap_BANG_(app_state, squint_core.assoc, "verse", idx15);
+return save_verse_pos_BANG_();
+};
+};
+
+};
 var goto_top_BANG_ = function () {
 const verses1 = squint_core.get(squint_core.deref(app_state), "verses");
 if (squint_core.truth_(squint_core.seq(verses1))) {
@@ -563,6 +601,29 @@ next_verse_BANG_()} else {
 if ((key3 === "k")) {
 e.preventDefault();
 prev_verse_BANG_()} else {
+if ((key3 === "Enter")) {
+e.preventDefault();
+scroll_half_down_BANG_();
+update_current_verse_from_viewport_BANG_()} else {
+if ((key3 === "Backspace")) {
+e.preventDefault();
+scroll_half_up_BANG_();
+update_current_verse_from_viewport_BANG_()} else {
+if ((key3 === " ")) {
+e.preventDefault();
+const verses4 = squint_core.get(squint_core.deref(app_state), "verses");
+const idx5 = squint_core.get(squint_core.deref(app_state), "verse");
+if (squint_core.truth_((() => {
+const and__23718__auto__6 = squint_core.seq(verses4);
+if (squint_core.truth_(and__23718__auto__6)) {
+return ((idx5 >= 0) && (idx5 < squint_core.count(verses4)))} else {
+return and__23718__auto__6};
+
+})())) {
+const v7 = squint_core.nth(verses4, idx5);
+const vnum8 = squint_core.get(v7, "v");
+if (squint_core.truth_(vnum8)) {
+toggle_highlight_BANG_(vnum8)}}} else {
 if ((key3 === "R")) {
 e.preventDefault();
 read_verse_BANG_()} else {
@@ -574,10 +635,10 @@ e.preventDefault();
 next_chapter_BANG_()} else {
 if ((key3 === "/")) {
 e.preventDefault();
-const input4 = document.getElementById("search-input");
-if (squint_core.truth_(input4)) {
-input4.focus();
-input4.value = "";
+const input9 = document.getElementById("search-input");
+if (squint_core.truth_(input9)) {
+input9.focus();
+input9.value = "";
 clear_search_BANG_()}} else {
 if ((key3 === "n")) {
 e.preventDefault();
@@ -590,27 +651,11 @@ e.preventDefault();
 goto_bottom_BANG_()} else {
 if ((key3 === "z")) {
 e.preventDefault();
-const now5 = Date.now();
-const temp__23182__auto__6 = window._lastZKey;
-if (squint_core.truth_(temp__23182__auto__6)) {
-const last_z7 = temp__23182__auto__6;
-if (((now5 - last_z7) < 500)) {
-const v8 = squint_core.get(squint_core.deref(app_state), "verse");
-const verses9 = squint_core.get(squint_core.deref(app_state), "verses");
-const verse_num10 = ((squint_core.truth_((() => {
-const and__23718__auto__11 = squint_core.seq(verses9);
-if (squint_core.truth_(and__23718__auto__11)) {
-return ((v8 >= 0) && (v8 < squint_core.count(verses9)))} else {
-return and__23718__auto__11};
-
-})())) ? (squint_core.get(squint_core.nth(verses9, v8), "v")) : (null));
-const el12 = ((squint_core.truth_(verse_num10)) ? (document.getElementById(`v${verse_num10??''}`)) : (null));
-if (squint_core.truth_(el12)) {
-el12.scrollIntoView(({"behavior": "smooth", "block": "center"}))}};
-window._lastZKey = 0} else {
-window._lastZKey = now5;
-setTimeout((function () {
-if (squint_core._EQ_(window._lastZKey, now5)) {
+const now10 = Date.now();
+const temp__23182__auto__11 = window._lastZKey;
+if (squint_core.truth_(temp__23182__auto__11)) {
+const last_z12 = temp__23182__auto__11;
+if (((now10 - last_z12) < 500)) {
 const v13 = squint_core.get(squint_core.deref(app_state), "verse");
 const verses14 = squint_core.get(squint_core.deref(app_state), "verses");
 const verse_num15 = ((squint_core.truth_((() => {
@@ -622,111 +667,127 @@ return and__23718__auto__16};
 })())) ? (squint_core.get(squint_core.nth(verses14, v13), "v")) : (null));
 const el17 = ((squint_core.truth_(verse_num15)) ? (document.getElementById(`v${verse_num15??''}`)) : (null));
 if (squint_core.truth_(el17)) {
-el17.scrollIntoView(({"behavior": "smooth", "block": "start"}))};
+el17.scrollIntoView(({"behavior": "smooth", "block": "center"}))}};
+window._lastZKey = 0} else {
+window._lastZKey = now10;
+setTimeout((function () {
+if (squint_core._EQ_(window._lastZKey, now10)) {
+const v18 = squint_core.get(squint_core.deref(app_state), "verse");
+const verses19 = squint_core.get(squint_core.deref(app_state), "verses");
+const verse_num20 = ((squint_core.truth_((() => {
+const and__23718__auto__21 = squint_core.seq(verses19);
+if (squint_core.truth_(and__23718__auto__21)) {
+return ((v18 >= 0) && (v18 < squint_core.count(verses19)))} else {
+return and__23718__auto__21};
+
+})())) ? (squint_core.get(squint_core.nth(verses19, v18), "v")) : (null));
+const el22 = ((squint_core.truth_(verse_num20)) ? (document.getElementById(`v${verse_num20??''}`)) : (null));
+if (squint_core.truth_(el22)) {
+el22.scrollIntoView(({"behavior": "smooth", "block": "start"}))};
 return window._lastZKey = 0;
 };
 
 }), 500)}} else {
 if ((key3 === "t")) {
-const temp__23263__auto__18 = window._lastZKey;
-if (squint_core.truth_(temp__23263__auto__18)) {
-const last_z19 = temp__23263__auto__18;
-if (((Date.now() - last_z19) < 500)) {
+const temp__23263__auto__23 = window._lastZKey;
+if (squint_core.truth_(temp__23263__auto__23)) {
+const last_z24 = temp__23263__auto__23;
+if (((Date.now() - last_z24) < 500)) {
 e.preventDefault();
-const v20 = squint_core.get(squint_core.deref(app_state), "verse");
-const verses21 = squint_core.get(squint_core.deref(app_state), "verses");
-const verse_num22 = ((squint_core.truth_((() => {
-const and__23718__auto__23 = squint_core.seq(verses21);
-if (squint_core.truth_(and__23718__auto__23)) {
-return ((v20 >= 0) && (v20 < squint_core.count(verses21)))} else {
-return and__23718__auto__23};
+const v25 = squint_core.get(squint_core.deref(app_state), "verse");
+const verses26 = squint_core.get(squint_core.deref(app_state), "verses");
+const verse_num27 = ((squint_core.truth_((() => {
+const and__23718__auto__28 = squint_core.seq(verses26);
+if (squint_core.truth_(and__23718__auto__28)) {
+return ((v25 >= 0) && (v25 < squint_core.count(verses26)))} else {
+return and__23718__auto__28};
 
-})())) ? (squint_core.get(squint_core.nth(verses21, v20), "v")) : (null));
-const el24 = ((squint_core.truth_(verse_num22)) ? (document.getElementById(`v${verse_num22??''}`)) : (null));
-if (squint_core.truth_(el24)) {
-el24.scrollIntoView(({"behavior": "smooth", "block": "start"}))};
+})())) ? (squint_core.get(squint_core.nth(verses26, v25), "v")) : (null));
+const el29 = ((squint_core.truth_(verse_num27)) ? (document.getElementById(`v${verse_num27??''}`)) : (null));
+if (squint_core.truth_(el29)) {
+el29.scrollIntoView(({"behavior": "smooth", "block": "start"}))};
 window._lastZKey = 0;
 true}}} else {
 if ((key3 === "b")) {
-const temp__23263__auto__25 = window._lastZKey;
-if (squint_core.truth_(temp__23263__auto__25)) {
-const last_z26 = temp__23263__auto__25;
-if (((Date.now() - last_z26) < 500)) {
+const temp__23263__auto__30 = window._lastZKey;
+if (squint_core.truth_(temp__23263__auto__30)) {
+const last_z31 = temp__23263__auto__30;
+if (((Date.now() - last_z31) < 500)) {
 e.preventDefault();
-const v27 = squint_core.get(squint_core.deref(app_state), "verse");
-const verses28 = squint_core.get(squint_core.deref(app_state), "verses");
-const verse_num29 = ((squint_core.truth_((() => {
-const and__23718__auto__30 = squint_core.seq(verses28);
-if (squint_core.truth_(and__23718__auto__30)) {
-return ((v27 >= 0) && (v27 < squint_core.count(verses28)))} else {
-return and__23718__auto__30};
+const v32 = squint_core.get(squint_core.deref(app_state), "verse");
+const verses33 = squint_core.get(squint_core.deref(app_state), "verses");
+const verse_num34 = ((squint_core.truth_((() => {
+const and__23718__auto__35 = squint_core.seq(verses33);
+if (squint_core.truth_(and__23718__auto__35)) {
+return ((v32 >= 0) && (v32 < squint_core.count(verses33)))} else {
+return and__23718__auto__35};
 
-})())) ? (squint_core.get(squint_core.nth(verses28, v27), "v")) : (null));
-const el31 = ((squint_core.truth_(verse_num29)) ? (document.getElementById(`v${verse_num29??''}`)) : (null));
-if (squint_core.truth_(el31)) {
-el31.scrollIntoView(({"behavior": "smooth", "block": "end"}))};
+})())) ? (squint_core.get(squint_core.nth(verses33, v32), "v")) : (null));
+const el36 = ((squint_core.truth_(verse_num34)) ? (document.getElementById(`v${verse_num34??''}`)) : (null));
+if (squint_core.truth_(el36)) {
+el36.scrollIntoView(({"behavior": "smooth", "block": "end"}))};
 window._lastZKey = 0;
 true}}} else {
 if ((key3 === "g")) {
 e.preventDefault();
-const now32 = Date.now();
-const temp__23182__auto__33 = window._lastGKey;
-if (squint_core.truth_(temp__23182__auto__33)) {
-const last_g34 = temp__23182__auto__33;
-if (((now32 - last_g34) < 500)) {
+const now37 = Date.now();
+const temp__23182__auto__38 = window._lastGKey;
+if (squint_core.truth_(temp__23182__auto__38)) {
+const last_g39 = temp__23182__auto__38;
+if (((now37 - last_g39) < 500)) {
 goto_top_BANG_()};
 window._lastGKey = 0} else {
-window._lastGKey = now32}} else {
+window._lastGKey = now37}} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__35 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__35)) {
+const and__23718__auto__40 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__40)) {
 return (key3 === "d")} else {
-return and__23718__auto__35};
+return and__23718__auto__40};
 
 })())) {
 e.preventDefault();
 scroll_half_down_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__36 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__36)) {
+const and__23718__auto__41 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__41)) {
 return (key3 === "u")} else {
-return and__23718__auto__36};
+return and__23718__auto__41};
 
 })())) {
 e.preventDefault();
 scroll_half_up_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__37 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__37)) {
+const and__23718__auto__42 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__42)) {
 return (key3 === "f")} else {
-return and__23718__auto__37};
+return and__23718__auto__42};
 
 })())) {
 e.preventDefault();
 scroll_full_down_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__38 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__38)) {
+const and__23718__auto__43 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__43)) {
 return (key3 === "b")} else {
-return and__23718__auto__38};
+return and__23718__auto__43};
 
 })())) {
 e.preventDefault();
 scroll_full_up_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__39 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__39)) {
+const and__23718__auto__44 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__44)) {
 return (key3 === "=")} else {
-return and__23718__auto__39};
+return and__23718__auto__44};
 
 })())) {
 e.preventDefault();
 change_font_size_BANG_(2)} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__40 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__40)) {
+const and__23718__auto__45 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__45)) {
 return (key3 === "-")} else {
-return and__23718__auto__40};
+return and__23718__auto__45};
 
 })())) {
 e.preventDefault();
@@ -734,44 +795,44 @@ change_font_size_BANG_(-2)} else {
 if ((key3 === "Escape")) {
 e.preventDefault();
 clear_search_BANG_();
-const input41 = document.getElementById("search-input");
-if (squint_core.truth_(input41)) {
-input41.blur()}} else {
+const input46 = document.getElementById("search-input");
+if (squint_core.truth_(input46)) {
+input46.blur()}} else {
 if ((key3 === "v")) {
-const temp__23263__auto__42 = window._numberPrefix;
-if (squint_core.truth_(temp__23263__auto__42)) {
-const np43 = temp__23263__auto__42;
-if (((Date.now() - np43.ts) < 700)) {
+const temp__23263__auto__47 = window._numberPrefix;
+if (squint_core.truth_(temp__23263__auto__47)) {
+const np48 = temp__23263__auto__47;
+if (((Date.now() - np48.ts) < 700)) {
 e.preventDefault();
-const vnum44 = parseInt(np43.digits, 10);
-if ((vnum44 >= 1)) {
-goto_verse_num_BANG_(vnum44)};
+const vnum49 = parseInt(np48.digits, 10);
+if ((vnum49 >= 1)) {
+goto_verse_num_BANG_(vnum49)};
 window._numberPrefix = null}}} else {
 if (squint_core.truth_(squint_core.re_matches(/[0-9]/, key3))) {
 e.preventDefault();
-const now45 = Date.now();
+const now50 = Date.now();
 if (squint_core.truth_(window._numberPrefix)) {
-const map__4647 = window._numberPrefix;
-const digits48 = squint_core.get(map__4647, "digits");
-const ts49 = squint_core.get(map__4647, "ts");
-if (((now45 - ts49) < 700)) {
-window._numberPrefix = ({"digits": `${digits48??''}${key3??''}`, "ts": now45})} else {
-window._numberPrefix = ({"digits": key3, "ts": now45})}} else {
-window._numberPrefix = ({"digits": key3, "ts": now45})};
+const map__5152 = window._numberPrefix;
+const digits53 = squint_core.get(map__5152, "digits");
+const ts54 = squint_core.get(map__5152, "ts");
+if (((now50 - ts54) < 700)) {
+window._numberPrefix = ({"digits": `${digits53??''}${key3??''}`, "ts": now50})} else {
+window._numberPrefix = ({"digits": key3, "ts": now50})}} else {
+window._numberPrefix = ({"digits": key3, "ts": now50})};
 setTimeout((function () {
-const temp__23263__auto__50 = window._numberPrefix;
-if (squint_core.truth_(temp__23263__auto__50)) {
-const np51 = temp__23263__auto__50;
-if (squint_core._EQ_(np51.ts, now45)) {
-const ch52 = parseInt(np51.digits, 10);
-if (squint_core.truth_(((ch52 >= 1) && (ch52 <= get_chapter_count(squint_core.get(squint_core.deref(app_state), "book")))))) {
-goto_chapter_BANG_(ch52)};
+const temp__23263__auto__55 = window._numberPrefix;
+if (squint_core.truth_(temp__23263__auto__55)) {
+const np56 = temp__23263__auto__55;
+if (squint_core._EQ_(np56.ts, now50)) {
+const ch57 = parseInt(np56.digits, 10);
+if (squint_core.truth_(((ch57 >= 1) && (ch57 <= get_chapter_count(squint_core.get(squint_core.deref(app_state), "book")))))) {
+goto_chapter_BANG_(ch57)};
 return window._numberPrefix = null;
 };
 };
 
 }), 700)} else {
-}}}}}}}}}}}}}}}}}}}}}};
+}}}}}}}}}}}}}}}}}}}}}}}}};
 return null;
 };
 
