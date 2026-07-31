@@ -1,0 +1,464 @@
+[
+  {
+    "name": "Genesis",
+    "file": "Genesis.json",
+    "chapters": 50,
+    "verses": 1667,
+    "size": 243603
+  },
+  {
+    "name": "Exodus",
+    "file": "Exodus.json",
+    "chapters": 40,
+    "verses": 1342,
+    "size": 205698
+  },
+  {
+    "name": "Leviticus",
+    "file": "Leviticus.json",
+    "chapters": 27,
+    "verses": 925,
+    "size": 152524
+  },
+  {
+    "name": "Numbers",
+    "file": "Numbers.json",
+    "chapters": 36,
+    "verses": 1392,
+    "size": 209662
+  },
+  {
+    "name": "Deuteronomy",
+    "file": "Deuteronomy.json",
+    "chapters": 34,
+    "verses": 1038,
+    "size": 173720
+  },
+  {
+    "name": "Joshua",
+    "file": "Joshua.json",
+    "chapters": 24,
+    "verses": 720,
+    "size": 119399
+  },
+  {
+    "name": "Judges",
+    "file": "Judges.json",
+    "chapters": 21,
+    "verses": 680,
+    "size": 116088
+  },
+  {
+    "name": "Ruth",
+    "file": "Ruth.json",
+    "chapters": 4,
+    "verses": 95,
+    "size": 15583
+  },
+  {
+    "name": "1 Samuel",
+    "file": "1_Samuel.json",
+    "chapters": 31,
+    "verses": 895,
+    "size": 153654
+  },
+  {
+    "name": "2 Samuel",
+    "file": "2_Samuel.json",
+    "chapters": 24,
+    "verses": 770,
+    "size": 128020
+  },
+  {
+    "name": "1 Kings",
+    "file": "1_Kings.json",
+    "chapters": 22,
+    "verses": 899,
+    "size": 150445
+  },
+  {
+    "name": "2 Kings",
+    "file": "2_Kings.json",
+    "chapters": 25,
+    "verses": 823,
+    "size": 143534
+  },
+  {
+    "name": "1 Chronicles",
+    "file": "1_Chronicles.json",
+    "chapters": 29,
+    "verses": 1037,
+    "size": 139703
+  },
+  {
+    "name": "2 Chronicles",
+    "file": "2_Chronicles.json",
+    "chapters": 36,
+    "verses": 954,
+    "size": 164000
+  },
+  {
+    "name": "Ezra",
+    "file": "Ezra.json",
+    "chapters": 10,
+    "verses": 317,
+    "size": 46817
+  },
+  {
+    "name": "Nehemiah",
+    "file": "Nehemiah.json",
+    "chapters": 13,
+    "verses": 449,
+    "size": 67720
+  },
+  {
+    "name": "Esther",
+    "file": "Esther.json",
+    "chapters": 10,
+    "verses": 197,
+    "size": 35097
+  },
+  {
+    "name": "Job",
+    "file": "Job.json",
+    "chapters": 42,
+    "verses": 1169,
+    "size": 130123
+  },
+  {
+    "name": "Psalm",
+    "file": "Psalm.json",
+    "chapters": 150,
+    "verses": 2904,
+    "size": 332393
+  },
+  {
+    "name": "Proverbs",
+    "file": "Proverbs.json",
+    "chapters": 31,
+    "verses": 980,
+    "size": 111867
+  },
+  {
+    "name": "Ecclesiastes",
+    "file": "Ecclesiastes.json",
+    "chapters": 12,
+    "verses": 253,
+    "size": 35707
+  },
+  {
+    "name": "Song of Solomon",
+    "file": "Song_of_Solomon.json",
+    "chapters": 8,
+    "verses": 137,
+    "size": 19589
+  },
+  {
+    "name": "Isaiah",
+    "file": "Isaiah.json",
+    "chapters": 66,
+    "verses": 1466,
+    "size": 245489
+  },
+  {
+    "name": "Jeremiah",
+    "file": "Jeremiah.json",
+    "chapters": 52,
+    "verses": 1503,
+    "size": 274406
+  },
+  {
+    "name": "Lamentations",
+    "file": "Lamentations.json",
+    "chapters": 5,
+    "verses": 165,
+    "size": 24196
+  },
+  {
+    "name": "Ezekiel",
+    "file": "Ezekiel.json",
+    "chapters": 48,
+    "verses": 1403,
+    "size": 241862
+  },
+  {
+    "name": "Daniel",
+    "file": "Daniel.json",
+    "chapters": 12,
+    "verses": 406,
+    "size": 75738
+  },
+  {
+    "name": "Hosea",
+    "file": "Hosea.json",
+    "chapters": 14,
+    "verses": 226,
+    "size": 35358
+  },
+  {
+    "name": "Joel",
+    "file": "Joel.json",
+    "chapters": 3,
+    "verses": 84,
+    "size": 13552
+  },
+  {
+    "name": "Amos",
+    "file": "Amos.json",
+    "chapters": 9,
+    "verses": 166,
+    "size": 27729
+  },
+  {
+    "name": "Obadiah",
+    "file": "Obadiah.json",
+    "chapters": 1,
+    "verses": 24,
+    "size": 4290
+  },
+  {
+    "name": "Jonah",
+    "file": "Jonah.json",
+    "chapters": 4,
+    "verses": 56,
+    "size": 8301
+  },
+  {
+    "name": "Micah",
+    "file": "Micah.json",
+    "chapters": 7,
+    "verses": 121,
+    "size": 20709
+  },
+  {
+    "name": "Nahum",
+    "file": "Nahum.json",
+    "chapters": 3,
+    "verses": 53,
+    "size": 8618
+  },
+  {
+    "name": "Habakkuk",
+    "file": "Habakkuk.json",
+    "chapters": 3,
+    "verses": 62,
+    "size": 10065
+  },
+  {
+    "name": "Zephaniah",
+    "file": "Zephaniah.json",
+    "chapters": 3,
+    "verses": 60,
+    "size": 10783
+  },
+  {
+    "name": "Haggai",
+    "file": "Haggai.json",
+    "chapters": 2,
+    "verses": 42,
+    "size": 6992
+  },
+  {
+    "name": "Zechariah",
+    "file": "Zechariah.json",
+    "chapters": 14,
+    "verses": 244,
+    "size": 40216
+  },
+  {
+    "name": "Malachi",
+    "file": "Malachi.json",
+    "chapters": 4,
+    "verses": 67,
+    "size": 11418
+  },
+  {
+    "name": "Matthew",
+    "file": "Matthew.json",
+    "chapters": 28,
+    "verses": 1219,
+    "size": 188293
+  },
+  {
+    "name": "Mark",
+    "file": "Mark.json",
+    "chapters": 16,
+    "verses": 751,
+    "size": 111672
+  },
+  {
+    "name": "Luke",
+    "file": "Luke.json",
+    "chapters": 24,
+    "verses": 1273,
+    "size": 197175
+  },
+  {
+    "name": "John",
+    "file": "John.json",
+    "chapters": 21,
+    "verses": 972,
+    "size": 144724
+  },
+  {
+    "name": "Acts",
+    "file": "Acts.json",
+    "chapters": 28,
+    "verses": 1103,
+    "size": 166850
+  },
+  {
+    "name": "Romans",
+    "file": "Romans.json",
+    "chapters": 16,
+    "verses": 470,
+    "size": 67029
+  },
+  {
+    "name": "1 Corinthians",
+    "file": "1_Corinthians.json",
+    "chapters": 16,
+    "verses": 475,
+    "size": 63921
+  },
+  {
+    "name": "2 Corinthians",
+    "file": "2_Corinthians.json",
+    "chapters": 13,
+    "verses": 285,
+    "size": 41467
+  },
+  {
+    "name": "Galatians",
+    "file": "Galatians.json",
+    "chapters": 6,
+    "verses": 166,
+    "size": 21966
+  },
+  {
+    "name": "Ephesians",
+    "file": "Ephesians.json",
+    "chapters": 6,
+    "verses": 170,
+    "size": 22017
+  },
+  {
+    "name": "Philippians",
+    "file": "Philippians.json",
+    "chapters": 4,
+    "verses": 116,
+    "size": 15451
+  },
+  {
+    "name": "Colossians",
+    "file": "Colossians.json",
+    "chapters": 4,
+    "verses": 105,
+    "size": 14746
+  },
+  {
+    "name": "1 Thessalonians",
+    "file": "1_Thessalonians.json",
+    "chapters": 5,
+    "verses": 101,
+    "size": 12932
+  },
+  {
+    "name": "2 Thessalonians",
+    "file": "2_Thessalonians.json",
+    "chapters": 3,
+    "verses": 53,
+    "size": 7346
+  },
+  {
+    "name": "1 Timothy",
+    "file": "1_Timothy.json",
+    "chapters": 6,
+    "verses": 128,
+    "size": 17588
+  },
+  {
+    "name": "2 Timothy",
+    "file": "2_Timothy.json",
+    "chapters": 4,
+    "verses": 93,
+    "size": 11902
+  },
+  {
+    "name": "Titus",
+    "file": "Titus.json",
+    "chapters": 3,
+    "verses": 54,
+    "size": 6763
+  },
+  {
+    "name": "Philemon",
+    "file": "Philemon.json",
+    "chapters": 1,
+    "verses": 29,
+    "size": 3311
+  },
+  {
+    "name": "Hebrews",
+    "file": "Hebrews.json",
+    "chapters": 13,
+    "verses": 341,
+    "size": 50344
+  },
+  {
+    "name": "James",
+    "file": "James.json",
+    "chapters": 5,
+    "verses": 121,
+    "size": 16238
+  },
+  {
+    "name": "1 Peter",
+    "file": "1_Peter.json",
+    "chapters": 5,
+    "verses": 119,
+    "size": 17855
+  },
+  {
+    "name": "2 Peter",
+    "file": "2_Peter.json",
+    "chapters": 3,
+    "verses": 70,
+    "size": 10852
+  },
+  {
+    "name": "1 John",
+    "file": "1_John.json",
+    "chapters": 5,
+    "verses": 120,
+    "size": 16270
+  },
+  {
+    "name": "2 John",
+    "file": "2_John.json",
+    "chapters": 1,
+    "verses": 15,
+    "size": 2054
+  },
+  {
+    "name": "3 John",
+    "file": "3_John.json",
+    "chapters": 1,
+    "verses": 17,
+    "size": 2163
+  },
+  {
+    "name": "Jude",
+    "file": "Jude.json",
+    "chapters": 1,
+    "verses": 28,
+    "size": 4501
+  },
+  {
+    "name": "Revelation",
+    "file": "Revelation.json",
+    "chapters": 22,
+    "verses": 484,
+    "size": 80407
+  }
+]
