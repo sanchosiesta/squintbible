@@ -2,16 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NASB Bible — Offline with Vim Keys</title>
+<title>NASB Bible</title>
 <script type="importmap">
 { "imports": { "squint-cljs/": "https://unpkg.com/squint-cljs/" } }
 </script>
 <style>
-  body { margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
-  #app { min-height:100vh; }
-  .verse-current { background:#e3edf7!important;border-left:3px solid #3498db; }
-  .verse-current.highlighted { background:#c8e6c9!important;border-left:3px solid #2e7d32; }
-  .search-hl { background:#e91e63;color:white;padding:0 2px;border-radius:2px; }
+  body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+  #app{min-height:100vh}
+  .verse-current{background:#e3edf7!important;border-left:3px solid #3498db}
+  .highlighted{background:#fff3a8!important}
+  .verse-current.highlighted{background:#c8e6c9!important;border-left:3px solid #2e7d32}
+  .search-hl{background:#e91e63;color:white;padding:0 2px;border-radius:2px}
 </style>
 </head>
 <body>
@@ -20,13 +21,13 @@
 import * as squint_core from "squint-cljs/core.js";
 import * as dexie from "https://unpkg.com/dexie@3.2.4/dist/dexie.js";
 import * as rg from "https://unpkg.com/reagami@0.1.37/reagami.mjs";
-const js__GT_clj = (x, ..._opts) => x;
+const js__GT_clj = x => x;
 let link1 = document.createElement("link");
 link1.rel = "stylesheet";
 link1.href = "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css";
 document.head.appendChild(link1);
 let style2 = document.createElement("style");
-style2.textContent = ".verse-current { background: #e3edf7 !important; border-left: 3px solid #3498db; }";
+style2.textContent = `${".verse-current { background: #e3edf7 !important; border-left: 3px solid #3498db; }"}${".highlighted { background: #fff3a8 !important; }"}${".verse-current.highlighted { background: #c8e6c9 !important; border-left: 3px solid #2e7d32; }"}`;
 document.head.appendChild(style2);
 var books_list = ["Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua", "Judges", "Ruth", "1 Samuel", "2 Samuel", "1 Kings", "2 Kings", "1 Chronicles", "2 Chronicles", "Ezra", "Nehemiah", "Esther", "Job", "Psalm", "Proverbs", "Ecclesiastes", "Song of Solomon", "Isaiah", "Jeremiah", "Lamentations", "Ezekiel", "Daniel", "Hosea", "Joel", "Amos", "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk", "Zephaniah", "Haggai", "Zechariah", "Malachi", "Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians", "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians", "1 Thessalonians", "2 Thessalonians", "1 Timothy", "2 Timothy", "Titus", "Philemon", "Hebrews", "James", "1 Peter", "2 Peter", "1 John", "2 John", "3 John", "Jude", "Revelation"];
 var chapter_counts = ({"Jude": 1, "1 Thessalonians": 5, "2 Thessalonians": 3, "Psalm": 150, "Revelation": 22, "Philippians": 4, "Judges": 21, "Galatians": 6, "2 Timothy": 4, "Ecclesiastes": 12, "Lamentations": 5, "2 Kings": 25, "Leviticus": 27, "Philemon": 1, "Joshua": 24, "Jeremiah": 52, "Romans": 16, "1 Peter": 5, "Zephaniah": 3, "Ruth": 4, "1 Kings": 22, "3 John": 1, "James": 5, "Nehemiah": 13, "1 Timothy": 6, "Colossians": 4, "2 Peter": 3, "2 Samuel": 24, "Zechariah": 14, "2 John": 1, "Daniel": 12, "Obadiah": 1, "Matthew": 28, "Luke": 24, "Hosea": 14, "Mark": 16, "John": 21, "Titus": 3, "Exodus": 40, "Nahum": 3, "Esther": 10, "Proverbs": 31, "Isaiah": 66, "Deuteronomy": 34, "Ezekiel": 48, "1 Samuel": 31, "Amos": 9, "Acts": 28, "Malachi": 4, "Joel": 3, "Hebrews": 13, "Numbers": 36, "1 Chronicles": 29, "1 John": 5, "Ezra": 10, "Ephesians": 6, "Job": 42, "Haggai": 2, "1 Corinthians": 16, "Song of Solomon": 8, "Genesis": 50, "Habakkuk": 3, "2 Chronicles": 36, "2 Corinthians": 13, "Micah": 7, "Jonah": 4});
@@ -479,7 +480,7 @@ return ["div", ({"style": "padding: 8px 16px; margin-top: 4px;", "class": "has-t
 return ["div", ({"id": `v${verse_num1??''}`, "onclick": (function (_) {
 return toggle_highlight_BANG_(verse_num1);
 
-}), "class": ((is_current6) ? ("verse-current") : (null)), "style": `${"display: flex; padding: 4px 8px; cursor: pointer; border-bottom: 1px solid #eee;"}${((squint_core.truth_(highlighted5)) ? ("background-color: #fff3a8;") : (null))??''}`}), ["div", ({"style": `${"color: #aaa; text-align: right; min-width: 48px; padding-right: 12px; font-size: "}${(font_size - 2)}${"px; user-select: none;"}`}), verse_num1], ["div", ({"style": `${"font-size: "}${font_size??''}${"px; flex: 1;"}`}), text2]]};
+}), "class": `${((is_current6) ? ("verse-current") : (null))??''}${((squint_core.truth_(highlighted5)) ? (" highlighted") : (null))??''}`, "style": `${"display: flex; padding: 4px 8px; cursor: pointer; border-bottom: 1px solid #eee;"}${squint_core.list()??''}`}), ["div", ({"style": `${"color: #aaa; text-align: right; min-width: 48px; padding-right: 12px; font-size: "}${(font_size - 2)}${"px; user-select: none;"}`}), verse_num1], ["div", ({"style": `${"font-size: "}${font_size??''}${"px; flex: 1;"}`}), text2]]};
 
 };
 var render_verses = function () {

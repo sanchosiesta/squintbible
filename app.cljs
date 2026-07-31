@@ -12,7 +12,10 @@
 
 ;; ── Custom Styles ──
 (let [style (.createElement js/document "style")]
-  (set! (.-textContent style) ".verse-current { background: #e3edf7 !important; border-left: 3px solid #3498db; }")
+  (set! (.-textContent style)
+    (str ".verse-current { background: #e3edf7 !important; border-left: 3px solid #3498db; }"
+         ".highlighted { background: #fff3a8 !important; }"
+         ".verse-current.highlighted { background: #c8e6c9 !important; border-left: 3px solid #2e7d32; }"))
   (.appendChild (.-head js/document) style))
 
 ;; ── Books & Chapter Counts ──
@@ -403,9 +406,9 @@
        text]
       [:div {:id (str "v" verse-num)
              :onclick (fn [_] (toggle-highlight! verse-num))
-             :class (when is-current "verse-current")
+              :class (str (when is-current "verse-current") (when highlighted " highlighted"))
              :style (str "display: flex; padding: 4px 8px; cursor: pointer; border-bottom: 1px solid #eee;"
-                         (when highlighted "background-color: #fff3a8;"))}
+                         ())}
        [:div {:style (str "color: #aaa; text-align: right; min-width: 48px; padding-right: 12px; font-size: " (- font-size 2) "px; user-select: none;")}
         verse-num]
        [:div {:style (str "font-size: " font-size "px; flex: 1;")}
