@@ -630,7 +630,10 @@
 (defn render-ui []
   (let [el (.getElementById js/document "app")]
     (when el
-      (let [scroll-y (.-scrollY js/window)]
+      ;; BUG 1 FIX: Save scrollTop of the verse container (overflow-y:auto div)
+      ;; instead of window.scrollY, since scrolling happens inside that container.
+      (let [verse-container (.querySelector js/document "[style*=\"overflow-y\"]")
+            scroll-top (if verse-container (.-scrollTop verse-container) 0)]
         (set! (.-innerHTML el) "")
         (rg/render el
           [:div
@@ -640,9 +643,11 @@
             (render-verses)]
            (render-progress-overlay)
            (render-status-bar)])
-        ;; Restore scroll position after DOM is rebuilt
-        (js/setTimeout #(js/window.scrollTo 0 scroll-y) 0)
-        ;; BUG 1 FIX: Sync select .value after reagami render with a short delay.
+        ;; Restore scrollTop on the new verse container after DOM is rebuilt
+        (let [new-container (.querySelector js/document "[style*=\"overflow-y\"]")]
+          (when new-container
+            (set! (.-scrollTop new-container) scroll-top)))
+        ;; Sync select .value after reagami render with a short delay.
         ;; reagami sets the HTML value attribute, but the browser only respects
         ;; the .value property on <select> after re-render. setTimeout ensures DOM is ready.
         (js/setTimeout (fn []
