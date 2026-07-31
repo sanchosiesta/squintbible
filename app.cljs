@@ -105,7 +105,7 @@
                    (.json resp)
                    (throw (js/Error. (str "Failed to load " book ": HTTP " (.-status resp)))))))
         (.then (fn [data]
-                 (let [arr (js->clj data :keywordize-keys true)
+                 (let [arr data
                        grouped (group-by :c arr)
                        entries (map (fn [[ch verses]]
                                       {:ref (str book ":" ch)
@@ -147,7 +147,7 @@
 (defn load-highlights! []
   (-> (.toArray (.-highlights bible-db))
       (.then (fn [rows]
-               (let [hs (set (map #(.-verseRef %) (js->clj rows)))]
+               (let [hs (set (map #(.-verseRef %) rows))]
                  (swap! app-state assoc :highlights hs)
                  (println "Loaded" (count hs) "highlights"))))))
 
@@ -155,7 +155,7 @@
 (defn load-settings! []
   (-> (.toArray (.-settings bible-db))
       (.then (fn [rows]
-               (doseq [row (js->clj rows)]
+               (doseq [row rows]
                  (let [k (keyword (.-keyName row))
                        v (.-value row)]
                    (when (= k :font-size)
@@ -172,7 +172,7 @@
     (-> (.get (.-verses bible-db) ref)
         (.then (fn [row]
                  (if row
-                   (let [verses (js->clj (.-verses row) :keywordize-keys true)]
+                   (let [verses (.-verses row)]
                      (swap! app-state assoc
                             :book book :chapter ch :verse 0 :verses verses)
                      (println "Displaying" book ch "-" (count verses) "entries")
@@ -371,7 +371,7 @@
   ;; First count how many are already cached
   (-> (.toArray (.-verses bible-db))
       (.then (fn [rows]
-               (let [cached (set (map #(.-book %) (js->clj rows)))
+               (let [cached (set (map #(.-book %) rows))
                      to-load (filter #(not (contains? cached %)) books-list)
                      total (count to-load)]
                  (swap! app-state assoc :total-books total)
