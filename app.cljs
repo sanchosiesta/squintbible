@@ -208,6 +208,14 @@
       (swap! app-state assoc :chapter ch :verse 0 :verses [] :search-term "" :search-results [] :search-idx -1)
       (load-chapter! book ch))))
 
+;; ── Goto book ──
+(defn goto-book! [book]
+  "Jump to a specific book at chapter 1. Resets search and verse position."
+  (when (contains? chapter-counts book)
+    (swap! app-state assoc :book book :chapter 1 :verse 0 :verses [] :search-term "" :search-results [] :search-idx -1)
+    (load-chapter! book 1)
+    (println "Switched to" book)))
+
 (defn next-chapter! []
   (let [book (:book @app-state)
         ch (:chapter @app-state)
@@ -419,88 +427,114 @@
 (defn render-navbar []
   (let [{:keys [book chapter font-size]} @app-state
         book-chapters (range 1 (inc (get-chapter-count book)))
-        chapters-str (str book " " chapter)]
-    [:nav {:class "navbar is-dark is-fixed-top"
-           :style "height: 48px; min-height: 48px;"}
-     [:div {:class "navbar-brand" :style "min-height: 48px;"}
-      [:span {:class "navbar-item" :style "font-weight: bold; padding: 0 12px; height: 48px;"}
-       "NASB Bible Reader"]]
-     [:div {:class "navbar-menu is-active" :style "height: 48px;"}
-      [:div {:class "navbar-start" :style "height: 48px; align-items: center;"}
-       ;; Book select
-       [:div {:class "navbar-item" :style "padding: 4px;"}
-        [:div {:class "select is-small"}
-         [:select {:value book
-                   :onchange (fn [e]
-                               (let [new-book (.. e -target -value)]
-                                 (swap! app-state assoc :book new-book :chapter 1 :verse 0 :verses [] :search-term "" :search-results [] :search-idx -1)
-                                 (load-chapter! new-book 1)))}
-          (for [b books-list]
-            [:option {:value b :key b} b])]]]
-       ;; Chapter select
-       [:div {:class "navbar-item" :style "padding: 4px;"}
-        [:div {:class "select is-small"}
-         [:select {:value (str chapter)
-                   :onchange (fn [e]
-                               (let [new-ch (js/parseInt (.. e -target -value) 10)]
-                                 (goto-chapter! new-ch)))}
-          (for [c book-chapters]
-            [:option {:value (str c) :key c} c])]]]
-       ;; Font size buttons
-       [:div {:class "navbar-item" :style "padding: 4px;"}
-        [:button {:class "button is-small is-light"
-                  :onclick (fn [_] (change-font-size! -2))
-                  :title "Decrease font"}
-         "A-"]]
-       [:div {:class "navbar-item" :style "padding: 4px;"}
-        [:button {:class "button is-small is-light"
-                  :onclick (fn [_] (change-font-size! 2))
-                  :title "Increase font"}
-         "A+"]]
-       ;; Speaker button
-       [:div {:class "navbar-item" :style "padding: 4px;"}
-        [:button {:class "button is-small is-light" :onclick (fn [_] (read-verse!)) :title "Read verse aloud (R)"} "Speaker"]]
-       ;; Search button
-       [:div {:class "navbar-item" :style "padding: 4px;"}
-        [:button {:class "button is-small is-info"
-                  :onclick (fn [_]
-                              (let [input (.getElementById js/document "search-input")]
-                                (when input
-                                  (.focus input)
-                                  (.select input))))}
-         "/ Search"]]
-       ;; Load Book button
-       [:div {:class "navbar-item" :style "padding: 4px;"}
-        [:button {:class "button is-small is-primary"
-                  :onclick (fn [_] (load-book! book))}
-         "Load Book"]]
-       ;; Load All button
-       [:div {:class "navbar-item" :style "padding: 4px;"}
-        [:button {:class "button is-small is-warning"
-                  :onclick (fn [_] (load-all!))}
-         "Load All"]]]]]))
+        ;; Shared button hiccups
+        font-minus-btn [:button {:class "button is-small is-light"
+                                 :onclick (fn [_] (change-font-size! -2))
+                                 :title "Decrease font"} "A-"]
+        font-plus-btn  [:button {:class "button is-small is-light"
+                                 :onclick (fn [_] (change-font-size! 2))
+                                 :title "Increase font"} "A+"]
+        speaker-btn    [:button {:class "button is-small is-light"
+                                 :onclick (fn [_] (read-verse!))
+                                 :title "Read verse aloud (R)"} "🔊"]
+        search-btn     [:button {:class "button is-small is-info"
+                                 :onclick (fn [_]
+                                            (let [input (.getElementById js/document "search-input")]
+                                              (when input (.focus input) (.select input))))}
+                        "🔍"]
+        load-book-btn  [:button {:class "button is-small is-primary"
+                                 :onclick (fn [_] (load-book! book))} "Load Book"]
+        load-all-btn   [:button {:class "button is-small is-warning"
+                                 :onclick (fn [_] (load-all!))} "Load All"]
+        ;; Helper: wrap button in navbar-item div
+        wrap-btn (fn [btn] [:div {:class "navbar-item" :style "padding: 4px;"} btn])
+        ;; Book select – use into for options
+        book-select [:div {:class "navbar-item" :style "padding: 4px;"}
+                     [:div {:class "select is-small"}
+                      (into [:select {:value book
+                                      :onchange (fn [e]
+                                                  (let [new-book (.. e -target -value)]
+                                                    (swap! app-state assoc :book new-book :chapter 1 :verse 0 :verses [] :search-term "" :search-results [] :search-idx -1)
+                                                    (load-chapter! new-book 1)))}]
+                            (mapv (fn [b] [:option {:value b :key b} b]) books-list))]]
+        ;; Chapter select – use into for options
+        chapter-select [:div {:class "navbar-item" :style "padding: 4px;"}
+                        [:div {:class "select is-small"}
+                         (into [:select {:value (str chapter)
+                                         :onchange (fn [e]
+                                                     (let [new-ch (js/parseInt (.. e -target -value) 10)]
+                                                       (goto-chapter! new-ch)))}]
+                               (mapv (fn [c] [:option {:value (str c) :key c} c]) book-chapters))]]
+        ;; Shared nav-brand
+        nav-brand [:div {:class "navbar-brand" :style "min-height: 48px;"}
+                   [:span {:class "navbar-item" :style "font-weight: bold; padding: 0 12px; height: 48px;"}
+                    "NASB"]]]
+    ;; Compose top-level div using into
+    (into
+     [:div]
+     [;; ── DESKTOP navbar: single row with all controls (hidden on touch) ──
+      [:nav {:class "navbar is-dark is-fixed-top is-hidden-touch"
+             :style "height: 48px; min-height: 48px;"}
+       nav-brand
+       [:div {:class "navbar-menu is-active" :style "height: 48px;"}
+        (into [:div {:class "navbar-start" :style "height: 48px; align-items: center;"}]
+              [book-select
+               chapter-select
+               (wrap-btn font-minus-btn)
+               (wrap-btn font-plus-btn)
+               (wrap-btn speaker-btn)
+               (wrap-btn search-btn)
+               (wrap-btn load-book-btn)
+               (wrap-btn load-all-btn)])]]
+      ;; ── MOBILE first navbar: book/chapter + Load Book/Load All ──
+      [:nav {:class "navbar is-dark is-hidden-desktop"
+             :style "height: 48px; min-height: 48px; position: fixed; top: 0; left: 0; right: 0; z-index: 31;"}
+       nav-brand
+       [:div {:class "navbar-menu is-active" :style "height: 48px;"}
+        (into [:div {:class "navbar-start" :style "height: 48px; align-items: center;"}]
+              [book-select
+               chapter-select
+               (wrap-btn load-book-btn)
+               (wrap-btn load-all-btn)])]]
+      ;; ── MOBILE second navbar: Font A-/A+/Speaker/Search (fixed below first) ──
+      [:nav {:class "navbar is-dark is-hidden-desktop"
+             :style "height: 48px; min-height: 48px; position: fixed; top: 48px; left: 0; right: 0; z-index: 30;"}
+       [:div {:class "navbar-menu is-active" :style "height: 48px;"}
+        (into [:div {:class "navbar-start" :style "height: 48px; align-items: center;"}]
+              [(wrap-btn font-minus-btn)
+               (wrap-btn font-plus-btn)
+               (wrap-btn speaker-btn)
+               (wrap-btn search-btn)])]]])))
 
 ;; ── Render: Search bar ──
+;; Wrapped in desktop/mobile containers so margin-top adapts to 1 vs 2 navbars.
 (defn render-search-bar []
-  (let [{:keys [search-term search-results search-idx]} @app-state]
-    [:div {:style "padding: 4px 8px; margin-top: 48px; display: flex; gap: 8px; align-items: center;"}
-     [:input {:id "search-input"
-              :class "input is-small"
-              :type "text"
-              :placeholder "Search current chapter... (n/N to navigate)"
-              :value search-term
-              :style "max-width: 400px;"
-              :oninput (fn [e] (do-search! (.. e -target -value)))
-              :onkeydown (fn [e]
-                          (when (= (.-key e) "Enter")
-                            (search-next!)
-                            (.preventDefault e))
-                          (when (= (.-key e) "Escape")
-                            (clear-search!)
-                            (.blur (.. e -target))))}]
-     (when (seq search-results)
-       [:span {:class "tag is-info"}
-        (str (inc search-idx) "/" (count search-results))])]))
+  (let [{:keys [search-term search-results search-idx]} @app-state
+        input-el [:input {:id "search-input"
+                          :class "input is-small"
+                          :type "text"
+                          :placeholder "Search current chapter... (n/N to navigate)"
+                          :value search-term
+                          :style "max-width: 400px;"
+                          :oninput (fn [e] (do-search! (.. e -target -value)))
+                          :onkeydown (fn [e]
+                                       (when (= (.-key e) "Enter")
+                                         (search-next!)
+                                         (.preventDefault e))
+                                       (when (= (.-key e) "Escape")
+                                         (clear-search!)
+                                         (.blur (.. e -target))))}]
+        results-tag (when (seq search-results)
+                      [:span {:class "tag is-info"}
+                       (str (inc search-idx) "/" (count search-results))])]
+    ;; Desktop: single navbar = 48px margin. Mobile: two navbars = 96px margin.
+    (into [:div]
+          [[:div {:class "is-hidden-touch"
+                  :style "padding: 4px 8px; margin-top: 48px; display: flex; gap: 8px; align-items: center;"}
+            input-el results-tag]
+           [:div {:class "is-hidden-desktop"
+                  :style "padding: 4px 8px; margin-top: 96px; display: flex; gap: 8px; align-items: center;"}
+            input-el results-tag]])))
 
 ;; ── Render: Progress overlay ──
 (defn render-progress-overlay []
