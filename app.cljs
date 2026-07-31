@@ -13,9 +13,11 @@
 ;; ── Custom Styles ──
 (let [style (.createElement js/document "style")]
   (set! (.-textContent style)
-    (str ".verse-current { background: #e3edf7 !important; border-left: 3px solid #3498db; }"
+    (str "html, body { overflow: auto !important; height: 100%; }"
+         ".verse-current { background: #e3edf7 !important; border-left: 3px solid #3498db; }"
          ".highlighted { background: #fff3a8 !important; }"
-         ".verse-current.highlighted { background: #c8e6c9 !important; border-left: 3px solid #2e7d32; }"))
+         ".verse-current.highlighted { background: #c8e6c9 !important; border-left: 3px solid #2e7d32; }"
+         "mark { background: #ffb6c1; border-radius: 2px; padding: 0 1px; }"))
   (.appendChild (.-head js/document) style))
 
 ;; ── Books & Chapter Counts ──
@@ -65,7 +67,10 @@
          :loading false
          :load-progress 0
          :total-books 66
-         :count-loaded 0}))
+         :count-loaded 0
+         :prev-book nil
+         :prev-chapter nil
+         :prev-verse nil}))
 
 ;; ── Helper: filename for a book ──
 (defn book->filename [book]
@@ -75,6 +80,29 @@
 (defn clean-text [s]
   (if (string? s)
     (.replace s (js/RegExp. "\\*[a-z]+" "g") "")
+
+;; ── Highlight search-term matches within text, returns hiccup ──
+(defn highlight-matches [text term]
+  "Wrap occurrences of term in text with <mark> tags, case-insensitive.
+   Returns text unchanged if no match, or a [:span ...] hiccup vector."
+  (if (or (empty? term) (not (string? text)))
+    text
+    (let [lo (.toLowerCase text)
+          lt (.toLowerCase term)
+          tl (count term)]
+      (loop [start 0
+             parts []]
+        (if (>= start (count text))
+          (if (== (count parts) 1) (first parts) (into [:span] parts))
+          (let [idx (.indexOf lo lt start)]
+            (if (neg? idx)
+              (recur (count text) (conj parts (.substring text start)))
+              (let [parts (if (> idx start)
+                            (conj parts (.substring text start idx))
+                            parts)
+                    parts (conj parts [:mark (.substring text idx (+ idx tl))])]
+                (recur (+ idx tl) parts)))))))))
+
     s))
 
 ;; ── Text-to-speech: read current verse aloud ──
@@ -172,10 +200,12 @@
     (-> (.get (.-verses bible-db) ref)
         (.then (fn [row]
                  (if row
-                   (let [verses (.-verses row)]
+                   (let [verses (.-verses row)
+                         ;; BUG 2 FIX: find first non-heading verse (h=0) instead of always 0
+                         first-verse-idx (or (first (keep-indexed #(when (= (:h %2) 0) %1) verses)) 0)]
                      (swap! app-state assoc
-                            :book book :chapter ch :verse 0 :verses verses)
-                     (println "Displaying" book ch "-" (count verses) "entries")
+                            :book book :chapter ch :verse first-verse-idx :verses verses)
+                     (println "Displaying" book ch "-" (count verses) "entries (first verse idx:" first-verse-idx ")")
                      (restore-verse-pos! book ch))
                    (do (println "Chapter not found in DB, loading book first...")
                        (-> (load-book! book)
@@ -285,9 +315,12 @@
 
 ;; ── Go to top/bottom of chapter & specific verse ──
 (defn goto-top! []
+  "Jump to first non-heading verse (h=0) and scroll it to center of viewport."
   (let [verses (:verses @app-state)]
     (when (seq verses)
-      (goto-verse! 0))))
+      ;; BUG 4 FIX: skip heading verses, go to first non-heading verse
+      (let [first-non-heading (first (keep-indexed #(when (= (:h %2) 0) %1) verses))]
+        (goto-verse! (or first-non-heading 0))))))
 
 (defn goto-bottom! []
   (let [verses (:verses @app-state)]
@@ -306,6 +339,29 @@
               (println "Jumped to verse" verse-num))
           (println "Verse" verse-num "not found in this chapter")))
       (println "No verses loaded"))))
+
+;; ── Toggle verse position: % key swaps current ↔ previous verse position ──
+(defn toggle-verse-position! []
+  (let [{:keys [book chapter verse prev-book prev-chapter prev-verse]} @app-state]
+    (if (nil? prev-verse)
+      ;; First press: save current position as previous
+      (swap! app-state assoc
+             :prev-book book
+             :prev-chapter chapter
+             :prev-verse verse)
+      ;; Second press: swap current and previous
+      (let [temp-book book
+            temp-chapter chapter
+            temp-verse verse]
+        (swap! app-state assoc
+               :book prev-book
+               :chapter prev-chapter
+               :verse prev-verse
+               :verses []
+               :prev-book temp-book
+               :prev-chapter temp-chapter
+               :prev-verse temp-verse)
+        (load-chapter! prev-book prev-chapter)))))
 
 ;; ── Toggle highlight on a verse ──
 (defn toggle-highlight! [verse-num]
@@ -396,7 +452,7 @@
                      (load-next to-load))))))))
 
 ;; ── Render: verse row ──
-(defn render-verse-row [v idx font-size highlights book chapter current-verse-num]
+(defn render-verse-row [v idx font-size highlights book chapter current-verse-num search-term]
   (let [verse-num (:v v)
         text (:t v)
         is-heading (> (:h v) 0)
@@ -415,7 +471,7 @@
        [:div {:style (str "color: #aaa; text-align: right; min-width: 48px; padding-right: 12px; font-size: " (- font-size 2) "px; user-select: none;")}
         verse-num]
        [:div {:style (str "font-size: " font-size "px; flex: 1;")}
-        text]])))
+        (highlight-matches text search-term)]])))
 
 ;; ── Render: verse list ──
 (defn render-verses []
@@ -575,10 +631,19 @@
         [:div
          (render-navbar)
          (render-search-bar)
-         [:div {:style "margin-top: 8px; padding: 0 8px 60px 8px;"}
+         [:div {:style "margin-top: 8px; padding: 0 8px 60px 8px; overflow-y: auto; height: calc(100vh - 200px);"}
           (render-verses)]
          (render-progress-overlay)
-         (render-status-bar)]))))
+         (render-status-bar)])
+      ;; BUG 1 FIX: Sync select .value after reagami render with a short delay.
+      ;; reagami sets the HTML value attribute, but the browser only respects
+      ;; the .value property on <select> after re-render. setTimeout ensures DOM is ready.
+      (js/setTimeout (fn []
+        (let [book-sel (.querySelector js/document "select")]
+          (when book-sel (set! (.-value book-sel) (:book @app-state))))
+        (let [sels (.querySelectorAll js/document "select")]
+          (when (and sels (>= (.-length sels) 2))
+            (set! (.-value (aget sels 1)) (str (:chapter @app-state)))))) 50))))
 
 ;; ── Force re-render ──
 (defn rerender! []
@@ -610,6 +675,8 @@
                                   vnum (:v v)]
                               (when vnum
                                 (toggle-highlight! vnum))))))
+          ;; % - toggle between current and previous verse position
+          (= key "%") (do (.preventDefault e) (toggle-verse-position!))
           ;; R - read verse aloud
           (= key "R") (do (.preventDefault e) (read-verse!))
           ;; h - previous chapter
