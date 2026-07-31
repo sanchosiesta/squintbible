@@ -566,7 +566,7 @@ return ["div", ({"style": "padding: 8px 16px; margin-top: 4px;", "class": "has-t
 return ["div", ({"id": `v${verse_num1??''}`, "onclick": (function (_) {
 return toggle_highlight_BANG_(verse_num1);
 
-}), "class": `${((is_current6) ? ("verse-current") : (null))??''}${((squint_core.truth_(highlighted5)) ? (" highlighted") : (null))??''}`, "style": `${"display: flex; padding: 4px 8px; cursor: pointer; border-bottom: 1px solid #eee;"}${squint_core.list()??''}`}), ["div", ({"style": `${"color: #aaa; text-align: right; min-width: 48px; padding-right: 12px; font-size: "}${(font_size - 2)}${"px; user-select: none;"}`}), verse_num1], ["div", ({"style": `${"font-size: "}${font_size??''}${"px; flex: 1;"}`}), highlight_matches(text2, search_term)]]};
+}), "class": `${((is_current6) ? ("verse-current") : (null))??''}${((squint_core.truth_(highlighted5)) ? (" highlighted") : (null))??''}`, "style": `${"display: flex; padding: 4px 8px; cursor: pointer; border-bottom: 1px solid #eee;"}`}), ["div", ({"style": `${"color: #aaa; text-align: right; min-width: 48px; padding-right: 12px; font-size: "}${(font_size - 2)}${"px; user-select: none;"}`}), verse_num1], ["div", ({"style": `${"font-size: "}${font_size??''}${"px; flex: 1;"}`}), highlight_matches(text2, search_term)]]};
 
 };
 var render_verses = function () {
@@ -577,17 +577,18 @@ const highlights5 = squint_core.get(map__12, "highlights");
 const book6 = squint_core.get(map__12, "book");
 const chapter7 = squint_core.get(map__12, "chapter");
 const verse8 = squint_core.get(map__12, "verse");
-const current_verse_num9 = ((squint_core.truth_((() => {
-const and__23718__auto__10 = squint_core.seq(verses3);
-if (squint_core.truth_(and__23718__auto__10)) {
+const search_term9 = squint_core.get(map__12, "search-term");
+const current_verse_num10 = ((squint_core.truth_((() => {
+const and__23718__auto__11 = squint_core.seq(verses3);
+if (squint_core.truth_(and__23718__auto__11)) {
 return ((verse8 >= 0) && (verse8 < squint_core.count(verses3)))} else {
-return and__23718__auto__10};
+return and__23718__auto__11};
 
 })())) ? (squint_core.get(squint_core.nth(verses3, verse8), "v")) : (null));
 if (squint_core.truth_(squint_core.empty_QMARK_(verses3))) {
 return ["div", ({"class": "notification is-info"}), "Loading..."]} else {
 return squint_core.into(["div"], squint_core.map_indexed((function (idx, v) {
-return render_verse_row(v, idx, font_size4, highlights5, book6, chapter7, current_verse_num9);
+return render_verse_row(v, idx, font_size4, highlights5, book6, chapter7, current_verse_num10, search_term9);
 
 }), verses3))};
 

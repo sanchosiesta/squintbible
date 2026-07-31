@@ -465,8 +465,7 @@
       [:div {:id (str "v" verse-num)
              :onclick (fn [_] (toggle-highlight! verse-num))
               :class (str (when is-current "verse-current") (when highlighted " highlighted"))
-             :style (str "display: flex; padding: 4px 8px; cursor: pointer; border-bottom: 1px solid #eee;"
-                         ())}
+             :style (str "display: flex; padding: 4px 8px; cursor: pointer; border-bottom: 1px solid #eee;")}
        [:div {:style (str "color: #aaa; text-align: right; min-width: 48px; padding-right: 12px; font-size: " (- font-size 2) "px; user-select: none;")}
         verse-num]
        [:div {:style (str "font-size: " font-size "px; flex: 1;")}
@@ -474,14 +473,14 @@
 
 ;; ── Render: verse list ──
 (defn render-verses []
-  (let [{:keys [verses font-size highlights book chapter verse]} @app-state
+  (let [{:keys [verses font-size highlights book chapter verse search-term]} @app-state
         current-verse-num (when (and (seq verses) (>= verse 0) (< verse (count verses)))
                             (:v (nth verses verse)))]
     (if (empty? verses)
       [:div {:class "notification is-info"} "Loading..."]
       (into [:div]
             (map-indexed (fn [idx v]
-                           (render-verse-row v idx font-size highlights book chapter current-verse-num))
+                           (render-verse-row v idx font-size highlights book chapter current-verse-num search-term))
                          verses)))))
 
 ;; ── Render: Navbar ──
