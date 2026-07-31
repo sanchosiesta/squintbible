@@ -15,7 +15,7 @@ var bible_db = (new Dexie("BibleDB"));
 bible_db.version(1).stores(squint_core.clj__GT_js(({"verses": "&ref", "highlights": "&verseRef", "settings": "&keyName"})));
 var app_state = squint_core.atom(({"verse": 0, "font-size": 18, "search-term": "", "verses": [], "highlights": (new Set ([])), "book": "Genesis", "total-books": 66, "load-progress": 0, "chapter": 1, "count-loaded": 0, "loading": false, "search-results": [], "search-idx": -1}));
 var book__GT_filename = function (book) {
-return `${"data/"}${book.replace(" ", "_")??''}${".json"}`;
+return `${"data/"}${book.replace((new RegExp(" ", "g")), "_")??''}${".json"}`;
 
 };
 var clean_text = function (s) {
@@ -55,10 +55,12 @@ return squint_core.get(chapter_counts, book, 1);
 var load_book_BANG_ = function (book) {
 const filename1 = book__GT_filename(book);
 return fetch(filename1).then((function (resp) {
-return resp.json();
+if (squint_core.truth_(resp.ok)) {
+return resp.json()} else {
+throw (new Error(`${"Failed to load "}${book??''}${": HTTP "}${resp.status??''}`))};
 
 })).then((function (data) {
-const arr2 = js__GT_clj(data, "keywordize-keys", true);
+const arr2 = data;
 const grouped3 = squint_core.group_by("c", arr2);
 const entries4 = squint_core.map((function (p__3) {
 const vec__58 = p__3;
@@ -121,7 +123,7 @@ return bible_db.highlights.toArray().then((function (rows) {
 const hs1 = squint_core.set(squint_core.map((function (_PERCENT_1) {
 return _PERCENT_1.verseRef;
 
-}), js__GT_clj(rows)));
+}), rows));
 squint_core.swap_BANG_(app_state, squint_core.assoc, "highlights", hs1);
 return squint_core.println("Loaded", squint_core.count(hs1), "highlights");
 
@@ -130,7 +132,7 @@ return squint_core.println("Loaded", squint_core.count(hs1), "highlights");
 };
 var load_settings_BANG_ = function () {
 return bible_db.settings.toArray().then((function (rows) {
-for (let G__1 of squint_core.iterable(js__GT_clj(rows))) {
+for (let G__1 of squint_core.iterable(rows)) {
 const row2 = G__1;
 const k3 = squint_core.keyword(row2.keyName);
 const v4 = row2.value;
@@ -150,7 +152,7 @@ var load_chapter_BANG_ = function (book, ch) {
 const ref1 = `${book??''}${":"}${ch??''}`;
 return bible_db.verses.get(ref1).then((function (row) {
 if (squint_core.truth_(row)) {
-const verses2 = js__GT_clj(row.verses, "keywordize-keys", true);
+const verses2 = row.verses;
 squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book, "chapter", ch, "verse", 0, "verses", verses2);
 squint_core.println("Displaying", book, ch, "-", squint_core.count(verses2), "entries");
 return restore_verse_pos_BANG_(book, ch);
@@ -407,7 +409,7 @@ return bible_db.verses.toArray().then((function (rows) {
 const cached1 = squint_core.set(squint_core.map((function (_PERCENT_1) {
 return _PERCENT_1.book;
 
-}), js__GT_clj(rows)));
+}), rows));
 const to_load2 = squint_core.filter((function (_PERCENT_1) {
 return squint_core.not(squint_core.contains_QMARK_(cached1, _PERCENT_1));
 
