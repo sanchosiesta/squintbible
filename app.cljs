@@ -69,7 +69,7 @@
 
 ;; ── Helper: filename for a book ──
 (defn book->filename [book]
-  (str "data/" (.replace book " " "_") ".json"))
+  (str "data/" (.replace book (js/RegExp. " " "g") "_") ".json"))
 
 ;; ── Helper: clean display text (strip *p *i *ln *pn *bp *iln *s etc) ──
 (defn clean-text [s]
@@ -100,7 +100,10 @@
 (defn load-book! [book]
   (let [filename (book->filename book)]
     (-> (js/fetch filename)
-        (.then (fn [resp] (.json resp)))
+        (.then (fn [resp]
+                 (if (.-ok resp)
+                   (.json resp)
+                   (throw (js/Error. (str "Failed to load " book ": HTTP " (.-status resp)))))))
         (.then (fn [data]
                  (let [arr (js->clj data :keywordize-keys true)
                        grouped (group-by :c arr)
