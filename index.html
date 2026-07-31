@@ -5,47 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NASB Bible — Offline with Vim Keys</title>
 <script type="importmap">
-{ "imports": {
-    "squint-cljs/": "https://unpkg.com/squint-cljs/",
-    "https://unpkg.com/dexie@3.2.4/dist/dexie.js": "https://unpkg.com/dexie@3.2.4/dist/dexie.js",
-    "https://unpkg.com/reagami@0.1.37/reagami.mjs": "https://unpkg.com/reagami@0.1.37/reagami.mjs"
-} }
+{ "imports": { "squint-cljs/": "https://unpkg.com/squint-cljs/" } }
 </script>
 <style>
   body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
   #app { min-height: 100vh; }
-  #offline-warning { display: none; background: #fff3cd; color: #856404; padding: 10px 16px; text-align: center; font-size: 14px; border-bottom: 1px solid #ffc107; }
-  #search-bar-wrap { position: fixed; top: 48px; left: 0; right: 0; z-index: 30; background: white; border-bottom: 1px solid #eee; }
-  #verse-area { padding-top: 100px; }
+  .verse-current { background: #e3edf7 !important; border-left: 3px solid #3498db; }
+  .search-hl { background: #e91e63; color: white; padding: 0 2px; border-radius: 2px; }
 </style>
 </head>
 <body>
-<div id="offline-warning">
-  ⚠️ Data loading requires HTTP. Use <code>python3 -m http.server 8765</code> and open <a href="http://localhost:8765">http://localhost:8765</a>.
-  Once books are loaded into IndexedDB, they work offline.
-</div>
 <div id="app">
   <div style="text-align:center;padding:60px;color:#95a5a6">
-    <p style="font-size:18px">Loading NASB Bible...</p>
-    <progress class="progress is-small is-primary" style="max-width:300px;margin:20px auto"></progress>
+    <p style="font-size:18px">NASB Bible</p><p>Loading...</p>
   </div>
 </div>
-
 <script type="module">
-// Show warning if opened from file://
-if (location.protocol === 'file:') {
-  document.getElementById('offline-warning').style.display = 'block';
-}
-
 import * as squint_core from 'https://unpkg.com/squint-cljs/core.js';
 import * as dexie from 'https://unpkg.com/dexie@3.2.4/dist/dexie.js';
 import * as rg from 'https://unpkg.com/reagami@0.1.37/reagami.mjs';
-
-// In squint, CLJ vectors/maps ARE JS arrays/objects — no conversion needed.
-// js->clj should be identity; data from fetch/Dexie is already usable.
 const js__GT_clj = (x, ..._opts) => x;
-
-// Inline compiled app code
+import * as squint_core from 'squint-cljs/core.js';
+import * as dexie from 'https://unpkg.com/dexie@3.2.4/dist/dexie.js';
+import * as rg from 'https://unpkg.com/reagami@0.1.37/reagami.mjs';
 let link1 = document.createElement("link");
 link1.rel = "stylesheet";
 link1.href = "https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css";
@@ -57,7 +39,7 @@ var bible_db = (new Dexie("BibleDB"));
 bible_db.version(1).stores(squint_core.clj__GT_js(({"verses": "&ref", "highlights": "&verseRef", "settings": "&keyName"})));
 var app_state = squint_core.atom(({"verse": 0, "font-size": 18, "search-term": "", "verses": [], "highlights": (new Set ([])), "book": "Genesis", "total-books": 66, "load-progress": 0, "chapter": 1, "count-loaded": 0, "loading": false, "search-results": [], "search-idx": -1}));
 var book__GT_filename = function (book) {
-return `${"data/"}${book.replace(/ /g, "_")??''}${".json"}`;
+return `${"data/"}${book.replace(" ", "_")??''}${".json"}`;
 
 };
 var clean_text = function (s) {
@@ -240,7 +222,11 @@ return window.scrollBy(0, (-(window.innerHeight)));
 
 };
 var goto_top_BANG_ = function () {
-window.scrollTo(0, 0);
+const verses1 = squint_core.get(squint_core.deref(app_state), "verses");
+if (squint_core.truth_(squint_core.seq(verses1))) {
+return goto_verse_BANG_(0);
+};
+
 };
 var goto_bottom_BANG_ = function () {
 const verses1 = squint_core.get(squint_core.deref(app_state), "verses");
@@ -451,10 +437,8 @@ const map__12 = squint_core.deref(app_state);
 const search_term3 = squint_core.get(map__12, "search-term");
 const search_results4 = squint_core.get(map__12, "search-results");
 const search_idx5 = squint_core.get(map__12, "search-idx");
-return ["div", ({"style": "padding: 4px 8px; display: flex; gap: 8px; align-items: center;", "id": "search-bar-wrap"}), ["input", ({"id": "search-input", "class": "input is-small", "type": "text", "placeholder": "Search current chapter... (n/N to navigate)", "value": search_term3, "style": "max-width: 400px;", "oninput": (function (e) {
-clearTimeout(window._bibleSearchTimer);
-    window._bibleSearchTimer = setTimeout(() => do_search_BANG_(e.target.value), 300);
-    return null;
+return ["div", ({"style": "padding: 4px 8px; margin-top: 48px; display: flex; gap: 8px; align-items: center;"}), ["input", ({"id": "search-input", "class": "input is-small", "type": "text", "placeholder": "Search current chapter... (n/N to navigate)", "value": search_term3, "style": "max-width: 400px;", "oninput": (function (e) {
+return do_search_BANG_(e.target.value);
 
 }), "onkeydown": (function (e) {
 if ((e.key === "Enter")) {
@@ -499,7 +483,7 @@ var render_ui = function () {
 const el1 = document.getElementById("app");
 if (squint_core.truth_(el1)) {
 el1.innerHTML = "";
-return rg.render(el1, ["div", render_navbar(), render_search_bar(), ["div", ({"style": "margin-top: 8px; padding: 0 8px 60px 8px;", "id": "verse-area"}), render_verses()], render_progress_overlay(), render_status_bar()]);
+return rg.render(el1, ["div", render_navbar(), render_search_bar(), ["div", ({"style": "margin-top: 8px; padding: 0 8px 60px 8px;"}), render_verses()], render_progress_overlay(), render_status_bar()]);
 };
 
 };
@@ -530,13 +514,23 @@ scroll_half_down_BANG_()} else {
 if ((key3 === "Backspace")) {
 e.preventDefault();
 scroll_half_up_BANG_()} else {
+if ((key3 === " ")) {
+e.preventDefault();
+const verses22 = squint_core.get(squint_core.deref(app_state), "verses");
+const idx22 = squint_core.get(squint_core.deref(app_state), "verse");
+if (squint_core.truth_(squint_core.seq(verses22)) && (idx22 >= 0) && (idx22 < squint_core.count(verses22))) {
+  const v22 = squint_core.nth(verses22, idx22);
+  const verse_num22 = squint_core.get(v22, "v");
+  if (squint_core.truth_(verse_num22)) { toggle_highlight_BANG_(verse_num22); }
+}} else {
 if ((key3 === "/")) {
 e.preventDefault();
 const input4 = document.getElementById("search-input");
 if (squint_core.truth_(input4)) {
 input4.focus();
-input4.value = input4.value; /* keep existing search */}} else {
-if ((key3 === "n" && !e.ctrlKey)) {
+input4.value = "";
+clear_search_BANG_()}} else {
+if ((key3 === "n")) {
 e.preventDefault();
 search_next_BANG_()} else {
 if ((key3 === "N")) {
@@ -609,7 +603,7 @@ return and__23718__auto__13};
 })())) {
 e.preventDefault();
 change_font_size_BANG_(-2)} else {
-if ((key3 === "Escape" || (key3 === "[" && e.ctrlKey))) {
+if ((key3 === "Escape")) {
 e.preventDefault();
 clear_search_BANG_();
 const input14 = document.getElementById("search-input");
@@ -639,7 +633,7 @@ return window._numberPrefix = null;
 };
 
 }), 700)} else {
-}}}}}}}}}}}}}}}}}}};
+}}}}}}}}}}}}}}}}}}}}};
 return null;
 };
 
@@ -647,33 +641,57 @@ return null;
 var init_BANG_ = function () {
 squint_core.println("NASB Bible Reader initializing...");
 document.onkeydown = handle_keydown;
+const startX1 = squint_core.atom(0);
+const startY2 = squint_core.atom(0);
+document.addEventListener("touchstart", (function (e) {
+if (squint_core.truth_((() => {
+const and__23718__auto__3 = e;
+if (squint_core.truth_(and__23718__auto__3)) {
+const and__23718__auto__4 = e.touches;
+if (squint_core.truth_(and__23718__auto__4)) {
+return (e.touches.length > 0)} else {
+return and__23718__auto__4};
+} else {
+return and__23718__auto__3};
 
-// ── Mobile swipe gestures ──
-let _swipeStartX = 0, _swipeStartY = 0;
-document.addEventListener('touchstart', (e) => {
-  const tag = (e.target.tagName || '').toUpperCase();
-  if (['INPUT','TEXTAREA','SELECT'].includes(tag)) return;
-  if (e.touches && e.touches.length > 0) {
-    _swipeStartX = e.touches[0].clientX;
-    _swipeStartY = e.touches[0].clientY;
-  }
-}, {passive: true});
-document.addEventListener('touchend', (e) => {
-  if (e.changedTouches && e.changedTouches.length > 0) {
-    const dx = e.changedTouches[0].clientX - _swipeStartX;
-    const dy = e.changedTouches[0].clientY - _swipeStartY;
-    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
-      if (dx < 0) next_chapter_BANG_();
-      else prev_chapter_BANG_();
-    }
-  }
-}, {passive: true});
+})())) {
+const touch5 = e.touches[0];
+const tag6 = e.target.tagName;
+if (squint_core.not(squint_core.contains_QMARK_((new Set (["INPUT", "TEXTAREA", "SELECT"])), tag6))) {
+squint_core.reset_BANG_(startX1, touch5.clientX);
+return squint_core.reset_BANG_(startY2, touch5.clientY);
+};
+};
 
+}), ({"passive": true}));
+document.addEventListener("touchend", (function (e) {
+if (squint_core.truth_((() => {
+const and__23718__auto__7 = e;
+if (squint_core.truth_(and__23718__auto__7)) {
+const and__23718__auto__8 = e.changedTouches;
+if (squint_core.truth_(and__23718__auto__8)) {
+return (e.changedTouches.length > 0)} else {
+return and__23718__auto__8};
+} else {
+return and__23718__auto__7};
+
+})())) {
+const touch9 = e.changedTouches[0];
+const deltaX10 = (touch9.clientX - squint_core.deref(startX1));
+const deltaY11 = (touch9.clientY - squint_core.deref(startY2));
+if (squint_core.truth_(((Math.abs(deltaX10) > 50) && (Math.abs(deltaX10) > Math.abs(deltaY11))))) {
+if ((deltaX10 < 0)) {
+return next_chapter_BANG_()} else {
+return prev_chapter_BANG_()};
+};
+};
+
+}), ({"passive": true}));
 load_highlights_BANG_();
 load_settings_BANG_();
 load_chapter_BANG_("Genesis", 1);
 render_ui();
-squint_core.add_watch(app_state, "rerender", (function (_, _1, _2, _3) {
+squint_core.add_watch(app_state, "rerender", (function (_, _12, _13, _14) {
 return render_ui();
 
 }));
@@ -684,64 +702,6 @@ var bible_app_obj = ({"appState": app_state, "init": init_BANG_, "loadAll": load
 window.bibleApp = bible_app_obj;
 init_BANG_();
 
-
-
-
-// Highlight search terms in verse text after render
-const _orig_render_ui2 = render_ui;
-render_ui = function() {
-  _orig_render_ui2();
-  setTimeout(() => {
-    try {
-      const st = squint_core.deref(app_state);
-      if (!st) return;
-      
-      // Preserve search input focus across re-renders
-      const searchInput = document.getElementById('search-input');
-      const wasFocused = searchInput && document.activeElement === searchInput;
-      const cursorPos = wasFocused ? searchInput.selectionStart : 0;
-      
-      // Fix select values (always)
-      const selects = document.querySelectorAll('.navbar-item select, .navbar-start select');
-      if (selects[0] && st.book) selects[0].value = st.book;
-      if (selects[1] && st.chapter) selects[1].value = String(st.chapter);
-      
-      // Highlight search term (only when searching)
-      const term = st['search-term'];
-      if (!term || term.length < 2) return;
-      
-      const verseTexts = document.querySelectorAll('#app [id^="v"]');
-      const regex = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-      verseTexts.forEach(el => {
-        // Only process if not already highlighted
-        if (!el.querySelector('mark.search-hl')) {
-          const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
-          const textNodes = [];
-          while (walker.nextNode()) textNodes.push(walker.currentNode);
-          textNodes.forEach(node => {
-            const parent = node.parentElement;
-            if (parent && parent.tagName !== 'MARK' && parent.tagName !== 'SCRIPT') {
-              const html = node.textContent.replace(regex, '<mark class="search-hl" style="background:#e91e63;color:white;padding:0 2px;border-radius:2px">$1</mark>');
-              if (html !== node.textContent) {
-                const span = document.createElement('span');
-                span.innerHTML = html;
-                parent.replaceChild(span, node);
-              }
-            }
-          });
-        }
-      });
-    // Restore focus if search input was focused
-      if (wasFocused && searchInput) {
-        searchInput.focus();
-        searchInput.setSelectionRange(cursorPos, cursorPos);
-      }
-    } catch(e) {}
-  }, 100);
-};
-
-
-console.log('NASB Bible app loaded!');
 </script>
 </body>
 </html>
