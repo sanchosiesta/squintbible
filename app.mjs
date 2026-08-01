@@ -1027,7 +1027,7 @@ const lastBook2 = rowB.value;
 return bible_db.settings.get("lastChapter").then((function (rowC) {
 if (squint_core.truth_(rowC)) {
 const lastCh2 = parseInt(rowC.value, 10);
-if ((lastCh2 > 0) && (lastCh2 <= book_chapters(lastBook2))) {
+if ((lastCh2 > 0) && (lastCh2 <= get_chapter_count(lastBook2))) {
 return load_chapter_BANG_(lastBook2, lastCh2);
 };
 };
