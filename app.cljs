@@ -335,6 +335,17 @@
   "Jump to first non-heading verse (h=0) and scroll it to center of viewport."
   (let [verses (:verses @app-state)]
     (when (seq verses)
+
+;; ── Random chapter ──
+(defn random-chapter! []
+  "Navigate to a random book and chapter. Keeps same book if shift is held."
+  (let [book (nth books-list (rand-int (count books-list)))
+        max-ch (get-chapter-count book)
+        ch (inc (rand-int max-ch))]
+    (swap! app-state assoc :book book :chapter ch :verse 0 :verses [] :search-term "" :search-results [] :search-idx -1)
+    (load-chapter! book ch)
+    (println "Random pick:" book ch)))
+
       ;; BUG 4 FIX: skip heading verses, go to first non-heading verse
       ;; Use aget because verses may be raw JS objects from Dexie
       (let [first-non-heading (first (keep-indexed #(when (zero? (aget %2 "h")) %1) verses))]
@@ -357,6 +368,65 @@
               (println "Jumped to verse" verse-num))
           (println "Verse" verse-num "not found in this chapter")))
       (println "No verses loaded"))))
+
+;; ── Parse & navigate to a Bible reference string ──
+;; Supports: "John 3:16", "1 John 1:9", "Genesis 1", "Song of Solomon 2:3", "Psalm 119"
+(defn goto-reference! [ref-str]
+  (if (or (nil? ref-str) (empty? (clojure.string/trim ref-str)))
+    (println "Usage: (goto-reference! \"Book Chapter:Verse\") e.g. \"John 3:16\"")
+    (let [s (clojure.string/trim ref-str)
+          ;; Find the longest book name that matches the start of the string.
+          ;; Sort descending by length so "Song of Solomon" matches before "Song".
+          candidates (->> books-list
+                          (filter #(let [lo-ref (.toLowerCase s)
+                                         lo-book (.toLowerCase %)]
+                                     (.startsWith lo-ref lo-book)))
+                          (sort-by count >))
+          book (first candidates)]
+      (if (nil? book)
+        (println "Book not recognized in:" (pr-str s))
+        (let [;; Strip the book name from the front; remainder is " 3:16" or " 3"
+              remainder (clojure.string/trim (.substring s (count book)))
+              ;; Split on colon: ["3", "16"] or just ["3"]
+              parts (clojure.string/split remainder #":")
+              ch-str (first parts)
+              verse-str (second parts)
+              ch (when ch-str (js/parseInt ch-str 10))
+              verse-num (when verse-str (js/parseInt verse-str 10))
+              max-ch (get-chapter-count book)]
+          (cond
+            (or (nil? ch) (not (>= ch 1)))
+            (println "Invalid reference:" (pr-str s) "- could not parse chapter")
+            (> ch max-ch)
+            (println book "has only" max-ch "chapters, not" ch)
+            :else
+            (do
+              (println "Navigating to" book ch (if verse-num (str ":" verse-num) ""))
+              (if (or (not= book (:book @app-state))
+                      (not= ch (:chapter @app-state)))
+                ;; Need to load a different book/chapter; defer verse jump until loaded
+                (do
+                  (swap! app-state assoc
+                         :book book :chapter ch :verse 0 :verses []
+                         :search-term "" :search-results [] :search-idx -1)
+                  (-> (load-chapter! book ch)
+                      (.then (fn []
+                               (when verse-num
+                                 (js/setTimeout #(goto-verse-num! verse-num) 100))))))
+                ;; Same chapter, just jump verse
+                (when verse-num
+                  (goto-verse-num! verse-num))))))))))
+
+
+;; ── Search Google for current verse ──
+(defn search-verse! []
+  (let [verses (:verses @app-state) idx (:verse @app-state)
+        book (:book @app-state) ch (:chapter @app-state)]
+    (when (and (seq verses) (>= idx 0) (< idx (count verses)))
+      (let [v (nth verses idx) text (:t v) vnum (:v v)
+            ref (str book " " ch ":" vnum)
+            query (js/encodeURIComponent (str "Explain this verse: " ref " - " text))]
+        (.open js/window (str "https://www.google.com/search?q=" query) "_blank")))))
 
 ;; ── Toggle verse position: % key swaps current ↔ previous verse position ──
 (defn toggle-verse-position! []
@@ -750,8 +820,8 @@
                                       (when el (.scrollIntoView el #js {:behavior "instant" :block "start"})))
                                     (set! (.-_lastZKey js/window) 0)))
                                 500)))))
-          ;; t after z → zt: scroll current verse to top
-          (= key "t") (when-let [last-z (.-_lastZKey js/window)]
+          ;; t - go to first verse; or zt: scroll current verse to top
+          (= key "t") (if-let [last-z (.-_lastZKey js/window)]
                         (when (< (- (.now js/Date) last-z) 500)
                           (.preventDefault e)
                           (let [v (:verse @app-state)
@@ -761,7 +831,8 @@
                                 el (when verse-num (.getElementById js/document (str "v" verse-num)))]
                             (when el (.scrollIntoView el #js {:behavior "instant" :block "start"})))
                           (set! (.-_lastZKey js/window) 0)
-                          true))
+                          true)
+                        (do (.preventDefault e) (goto-top!)))
           ;; b after z → zb: scroll current verse to bottom
           (= key "b") (when-let [last-z (.-_lastZKey js/window)]
                         (when (< (- (.now js/Date) last-z) 500)
@@ -894,6 +965,7 @@
        :gotoTop goto-top!
        :gotoBottom goto-bottom!
        :gotoVerseNum goto-verse-num!
+       :randomChapter random-chapter!
        :rerender rerender!
        :init init!})
 

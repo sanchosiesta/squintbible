@@ -1,4 +1,5 @@
 import * as squint_core from 'squint-cljs/core.js';
+import * as clojure_DOT_string from 'squint-cljs/src/squint/string.js';
 import * as dexie from 'https://unpkg.com/dexie@3.2.4/dist/dexie.js';
 import * as rg from 'https://unpkg.com/reagami@0.1.37/reagami.mjs';
 let link1 = document.createElement("link");
@@ -81,6 +82,26 @@ const text4 = squint_core.get(squint_core.nth(verses1, idx2), "t");
 speechSynthesis.cancel();
 const utterance5 = (new SpeechSynthesisUtterance(text4));
 return speechSynthesis.speak(utterance5);
+};
+
+};
+var yank_verse_BANG_ = function () {
+const verses1 = squint_core.get(squint_core.deref(app_state), "verses");
+const idx2 = squint_core.get(squint_core.deref(app_state), "verse");
+const book3 = squint_core.get(squint_core.deref(app_state), "book");
+const ch4 = squint_core.get(squint_core.deref(app_state), "chapter");
+if (squint_core.truth_((() => {
+const and__23718__auto__5 = squint_core.seq(verses1);
+if (squint_core.truth_(and__23718__auto__5)) {
+return ((idx2 >= 0) && (idx2 < squint_core.count(verses1)))} else {
+return and__23718__auto__5};
+
+})())) {
+const v6 = squint_core.nth(verses1, idx2);
+const vnum7 = squint_core.get(v6, "v");
+const text8 = squint_core.get(v6, "t");
+const ref9 = `${book3??''}${" "}${ch4??''}${":"}${vnum7??''}`;
+return navigator.clipboard.writeText(`${ref9}${" - "}${text8??''}`);
 };
 
 };
@@ -209,8 +230,6 @@ return 0};
 
 })();
 squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book, "chapter", ch, "verse", first_verse_idx3, "verses", verses2);
-bible_db.settings.put({"keyName": "lastBook", "value": book});
-bible_db.settings.put({"keyName": "lastChapter", "value": String(ch)});
 squint_core.println("Displaying", book, ch, "-", squint_core.count(verses2), "entries (first verse idx:", first_verse_idx3, ")");
 return restore_verse_pos_BANG_(book, ch);
 } else {
@@ -364,16 +383,26 @@ var goto_top_BANG_ = function () {
 "Jump to first non-heading verse (h=0) and scroll it to center of viewport.";
 const verses1 = squint_core.get(squint_core.deref(app_state), "verses");
 if (squint_core.truth_(squint_core.seq(verses1))) {
-const first_non_heading2 = squint_core.first(squint_core.keep_indexed((function (_PERCENT_1, _PERCENT_2) {
+var random_chapter_BANG_ = function () {
+"Navigate to a random book and chapter. Keeps same book if shift is held.";
+const book2 = squint_core.nth(books_list, squint_core.rand_int(squint_core.count(books_list)));
+const max_ch3 = get_chapter_count(book2);
+const ch4 = (squint_core.rand_int(max_ch3) + 1);
+squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book2, "chapter", ch4, "verse", 0, "verses", [], "search-term", "", "search-results", [], "search-idx", -1);
+load_chapter_BANG_(book2, ch4);
+return squint_core.println("Random pick:", book2, ch4);
+
+};
+const first_non_heading5 = squint_core.first(squint_core.keep_indexed((function (_PERCENT_1, _PERCENT_2) {
 if ((_PERCENT_2["h"] === 0)) {
 return _PERCENT_1;
 };
 
 }), verses1));
 return goto_verse_BANG_((() => {
-const or__23674__auto__3 = first_non_heading2;
-if (squint_core.truth_(or__23674__auto__3)) {
-return or__23674__auto__3} else {
+const or__23674__auto__6 = first_non_heading5;
+if (squint_core.truth_(or__23674__auto__6)) {
+return or__23674__auto__6} else {
 return 0};
 
 })());
@@ -404,6 +433,92 @@ return squint_core.println("Jumped to verse", verse_num);
 return squint_core.println("Verse", verse_num, "not found in this chapter")};
 } else {
 return squint_core.println("No verses loaded")};
+
+};
+var goto_reference_BANG_ = function (ref_str) {
+if (squint_core.truth_((() => {
+const or__23674__auto__1 = (ref_str == null);
+if (or__23674__auto__1) {
+return or__23674__auto__1} else {
+return squint_core.empty_QMARK_(clojure_DOT_string.trim(ref_str))};
+
+})())) {
+return squint_core.println("Usage: (goto-reference! \"Book Chapter:Verse\") e.g. \"John 3:16\"")} else {
+const s2 = clojure_DOT_string.trim(ref_str);
+const candidates3 = squint_core.sort_by(squint_core.count, squint_core._GT_, squint_core.filter((function (_PERCENT_1) {
+const lo_ref4 = s2.toLowerCase();
+const lo_book5 = _PERCENT_1.toLowerCase();
+return lo_ref4.startsWith(lo_book5);
+
+}), books_list));
+const book6 = squint_core.first(candidates3);
+if ((book6 == null)) {
+return squint_core.println("Book not recognized in:", squint_core.pr_str(s2))} else {
+const remainder7 = clojure_DOT_string.trim(s2.substring(squint_core.count(book6)));
+const parts8 = clojure_DOT_string.split(remainder7, /:/);
+const ch_str9 = squint_core.first(parts8);
+const verse_str10 = squint_core.second(parts8);
+const ch11 = ((squint_core.truth_(ch_str9)) ? (parseInt(ch_str9, 10)) : (null));
+const verse_num12 = ((squint_core.truth_(verse_str10)) ? (parseInt(verse_str10, 10)) : (null));
+const max_ch13 = get_chapter_count(book6);
+if (squint_core.truth_((() => {
+const or__23674__auto__14 = (ch11 == null);
+if (or__23674__auto__14) {
+return or__23674__auto__14} else {
+return !(ch11 >= 1)};
+
+})())) {
+return squint_core.println("Invalid reference:", squint_core.pr_str(s2), "- could not parse chapter")} else {
+if ((ch11 > max_ch13)) {
+return squint_core.println(book6, "has only", max_ch13, "chapters, not", ch11)} else {
+if ("else") {
+squint_core.println("Navigating to", book6, ch11, ((squint_core.truth_(verse_num12)) ? (`${":"}${verse_num12??''}`) : ("")));
+if (squint_core.truth_((() => {
+const or__23674__auto__15 = !squint_core._EQ_(book6, squint_core.get(squint_core.deref(app_state), "book"));
+if (or__23674__auto__15) {
+return or__23674__auto__15} else {
+return !squint_core._EQ_(ch11, squint_core.get(squint_core.deref(app_state), "chapter"))};
+
+})())) {
+squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book6, "chapter", ch11, "verse", 0, "verses", [], "search-term", "", "search-results", [], "search-idx", -1);
+return load_chapter_BANG_(book6, ch11).then((function () {
+if (squint_core.truth_(verse_num12)) {
+return setTimeout((function () {
+return goto_verse_num_BANG_(verse_num12);
+
+}), 100);
+};
+
+}));
+} else {
+if (squint_core.truth_(verse_num12)) {
+return goto_verse_num_BANG_(verse_num12);
+}};
+} else {
+return null}}};
+};
+};
+
+};
+var search_verse_BANG_ = function () {
+const verses1 = squint_core.get(squint_core.deref(app_state), "verses");
+const idx2 = squint_core.get(squint_core.deref(app_state), "verse");
+const book3 = squint_core.get(squint_core.deref(app_state), "book");
+const ch4 = squint_core.get(squint_core.deref(app_state), "chapter");
+if (squint_core.truth_((() => {
+const and__23718__auto__5 = squint_core.seq(verses1);
+if (squint_core.truth_(and__23718__auto__5)) {
+return ((idx2 >= 0) && (idx2 < squint_core.count(verses1)))} else {
+return and__23718__auto__5};
+
+})())) {
+const v6 = squint_core.nth(verses1, idx2);
+const text7 = squint_core.get(v6, "t");
+const vnum8 = squint_core.get(v6, "v");
+const ref9 = `${book3??''}${" "}${ch4??''}${":"}${vnum8??''}`;
+const query10 = encodeURIComponent(`${"Explain this verse: "}${ref9}${" - "}${text7??''}`);
+return window.open(`${"https://www.google.com/search?q="}${query10??''}`, "_blank");
+};
 
 };
 var toggle_verse_position_BANG_ = function () {
@@ -725,6 +840,12 @@ const tag1 = e.target.tagName;
 const tag_upper2 = ((squint_core.truth_(tag1)) ? (tag1.toUpperCase()) : (null));
 if (squint_core.not(squint_core.contains_QMARK_((new Set (["INPUT", "TEXTAREA", "SELECT"])), tag_upper2))) {
 const key3 = e.key;
+if ((key3 === "t")) {
+e.preventDefault();
+goto_top_BANG_()} else {
+if ((key3 === "b") && !(window._lastZKey && ((Date.now() - window._lastZKey) < 500))) {
+e.preventDefault();
+goto_bottom_BANG_()} else {
 if ((key3 === "j")) {
 e.preventDefault();
 next_verse_BANG_()} else {
@@ -757,7 +878,13 @@ toggle_highlight_BANG_(vnum8)}}} else {
 if ((key3 === "%")) {
 e.preventDefault();
 toggle_verse_position_BANG_()} else {
-if ((key3 === "R")) {
+if (squint_core.truth_((() => {
+const or__23674__auto__9 = (key3 === "R");
+if (or__23674__auto__9) {
+return or__23674__auto__9} else {
+return (key3 === "o")};
+
+})())) {
 e.preventDefault();
 read_verse_BANG_()} else {
 if ((key3 === "h")) {
@@ -768,10 +895,10 @@ e.preventDefault();
 next_chapter_BANG_()} else {
 if ((key3 === "/")) {
 e.preventDefault();
-const input9 = document.getElementById("search-input");
-if (squint_core.truth_(input9)) {
-input9.focus();
-input9.value = "";
+const input10 = document.getElementById("search-input");
+if (squint_core.truth_(input10)) {
+input10.focus();
+input10.value = "";
 clear_search_BANG_()}} else {
 if ((key3 === "n")) {
 e.preventDefault();
@@ -784,143 +911,158 @@ e.preventDefault();
 goto_bottom_BANG_()} else {
 if ((key3 === "z")) {
 e.preventDefault();
-const now10 = Date.now();
-const temp__23182__auto__11 = window._lastZKey;
-if (squint_core.truth_(temp__23182__auto__11)) {
-const last_z12 = temp__23182__auto__11;
-if (((now10 - last_z12) < 500)) {
-const v13 = squint_core.get(squint_core.deref(app_state), "verse");
-const verses14 = squint_core.get(squint_core.deref(app_state), "verses");
-const verse_num15 = ((squint_core.truth_((() => {
-const and__23718__auto__16 = squint_core.seq(verses14);
-if (squint_core.truth_(and__23718__auto__16)) {
-return ((v13 >= 0) && (v13 < squint_core.count(verses14)))} else {
-return and__23718__auto__16};
+const now11 = Date.now();
+const temp__23182__auto__12 = window._lastZKey;
+if (squint_core.truth_(temp__23182__auto__12)) {
+const last_z13 = temp__23182__auto__12;
+if (((now11 - last_z13) < 500)) {
+const v14 = squint_core.get(squint_core.deref(app_state), "verse");
+const verses15 = squint_core.get(squint_core.deref(app_state), "verses");
+const verse_num16 = ((squint_core.truth_((() => {
+const and__23718__auto__17 = squint_core.seq(verses15);
+if (squint_core.truth_(and__23718__auto__17)) {
+return ((v14 >= 0) && (v14 < squint_core.count(verses15)))} else {
+return and__23718__auto__17};
 
-})())) ? (squint_core.get(squint_core.nth(verses14, v13), "v")) : (null));
-const el17 = ((squint_core.truth_(verse_num15)) ? (document.getElementById(`v${verse_num15??''}`)) : (null));
-if (squint_core.truth_(el17)) {
-el17.scrollIntoView(({"behavior": "instant", "block": "center"}))}};
+})())) ? (squint_core.get(squint_core.nth(verses15, v14), "v")) : (null));
+const el18 = ((squint_core.truth_(verse_num16)) ? (document.getElementById(`v${verse_num16??''}`)) : (null));
+if (squint_core.truth_(el18)) {
+el18.scrollIntoView(({"behavior": "instant", "block": "center"}))}};
 window._lastZKey = 0} else {
-window._lastZKey = now10;
+window._lastZKey = now11;
 setTimeout((function () {
-if (squint_core._EQ_(window._lastZKey, now10)) {
-const v18 = squint_core.get(squint_core.deref(app_state), "verse");
-const verses19 = squint_core.get(squint_core.deref(app_state), "verses");
-const verse_num20 = ((squint_core.truth_((() => {
-const and__23718__auto__21 = squint_core.seq(verses19);
-if (squint_core.truth_(and__23718__auto__21)) {
-return ((v18 >= 0) && (v18 < squint_core.count(verses19)))} else {
-return and__23718__auto__21};
+if (squint_core._EQ_(window._lastZKey, now11)) {
+const v19 = squint_core.get(squint_core.deref(app_state), "verse");
+const verses20 = squint_core.get(squint_core.deref(app_state), "verses");
+const verse_num21 = ((squint_core.truth_((() => {
+const and__23718__auto__22 = squint_core.seq(verses20);
+if (squint_core.truth_(and__23718__auto__22)) {
+return ((v19 >= 0) && (v19 < squint_core.count(verses20)))} else {
+return and__23718__auto__22};
 
-})())) ? (squint_core.get(squint_core.nth(verses19, v18), "v")) : (null));
-const el22 = ((squint_core.truth_(verse_num20)) ? (document.getElementById(`v${verse_num20??''}`)) : (null));
-if (squint_core.truth_(el22)) {
-el22.scrollIntoView(({"behavior": "instant", "block": "start"}))};
+})())) ? (squint_core.get(squint_core.nth(verses20, v19), "v")) : (null));
+const el23 = ((squint_core.truth_(verse_num21)) ? (document.getElementById(`v${verse_num21??''}`)) : (null));
+if (squint_core.truth_(el23)) {
+el23.scrollIntoView(({"behavior": "instant", "block": "start"}))};
 return window._lastZKey = 0;
 };
 
 }), 500)}} else {
 if ((key3 === "t")) {
-const temp__23263__auto__23 = window._lastZKey;
-if (squint_core.truth_(temp__23263__auto__23)) {
-const last_z24 = temp__23263__auto__23;
-if (((Date.now() - last_z24) < 500)) {
+const temp__23182__auto__24 = window._lastZKey;
+if (squint_core.truth_(temp__23182__auto__24)) {
+const last_z25 = temp__23182__auto__24;
+if (((Date.now() - last_z25) < 500)) {
 e.preventDefault();
-const v25 = squint_core.get(squint_core.deref(app_state), "verse");
-const verses26 = squint_core.get(squint_core.deref(app_state), "verses");
-const verse_num27 = ((squint_core.truth_((() => {
-const and__23718__auto__28 = squint_core.seq(verses26);
-if (squint_core.truth_(and__23718__auto__28)) {
-return ((v25 >= 0) && (v25 < squint_core.count(verses26)))} else {
-return and__23718__auto__28};
+const v26 = squint_core.get(squint_core.deref(app_state), "verse");
+const verses27 = squint_core.get(squint_core.deref(app_state), "verses");
+const verse_num28 = ((squint_core.truth_((() => {
+const and__23718__auto__29 = squint_core.seq(verses27);
+if (squint_core.truth_(and__23718__auto__29)) {
+return ((v26 >= 0) && (v26 < squint_core.count(verses27)))} else {
+return and__23718__auto__29};
 
-})())) ? (squint_core.get(squint_core.nth(verses26, v25), "v")) : (null));
-const el29 = ((squint_core.truth_(verse_num27)) ? (document.getElementById(`v${verse_num27??''}`)) : (null));
-if (squint_core.truth_(el29)) {
-el29.scrollIntoView(({"behavior": "instant", "block": "start"}))};
+})())) ? (squint_core.get(squint_core.nth(verses27, v26), "v")) : (null));
+const el30 = ((squint_core.truth_(verse_num28)) ? (document.getElementById(`v${verse_num28??''}`)) : (null));
+if (squint_core.truth_(el30)) {
+el30.scrollIntoView(({"behavior": "instant", "block": "start"}))};
 window._lastZKey = 0;
-true}}} else {
+true}} else {
+e.preventDefault();
+goto_top_BANG_()}} else {
 if ((key3 === "b")) {
-const temp__23263__auto__30 = window._lastZKey;
-if (squint_core.truth_(temp__23263__auto__30)) {
-const last_z31 = temp__23263__auto__30;
-if (((Date.now() - last_z31) < 500)) {
+const temp__23263__auto__31 = window._lastZKey;
+if (squint_core.truth_(temp__23263__auto__31)) {
+const last_z32 = temp__23263__auto__31;
+if (((Date.now() - last_z32) < 500)) {
 e.preventDefault();
-const v32 = squint_core.get(squint_core.deref(app_state), "verse");
-const verses33 = squint_core.get(squint_core.deref(app_state), "verses");
-const verse_num34 = ((squint_core.truth_((() => {
-const and__23718__auto__35 = squint_core.seq(verses33);
-if (squint_core.truth_(and__23718__auto__35)) {
-return ((v32 >= 0) && (v32 < squint_core.count(verses33)))} else {
-return and__23718__auto__35};
+const v33 = squint_core.get(squint_core.deref(app_state), "verse");
+const verses34 = squint_core.get(squint_core.deref(app_state), "verses");
+const verse_num35 = ((squint_core.truth_((() => {
+const and__23718__auto__36 = squint_core.seq(verses34);
+if (squint_core.truth_(and__23718__auto__36)) {
+return ((v33 >= 0) && (v33 < squint_core.count(verses34)))} else {
+return and__23718__auto__36};
 
-})())) ? (squint_core.get(squint_core.nth(verses33, v32), "v")) : (null));
-const el36 = ((squint_core.truth_(verse_num34)) ? (document.getElementById(`v${verse_num34??''}`)) : (null));
-if (squint_core.truth_(el36)) {
-el36.scrollIntoView(({"behavior": "instant", "block": "end"}))};
+})())) ? (squint_core.get(squint_core.nth(verses34, v33), "v")) : (null));
+const el37 = ((squint_core.truth_(verse_num35)) ? (document.getElementById(`v${verse_num35??''}`)) : (null));
+if (squint_core.truth_(el37)) {
+el37.scrollIntoView(({"behavior": "instant", "block": "end"}))};
 window._lastZKey = 0;
 true}}} else {
+if ((key3 === "y")) {
+e.preventDefault();
+const now38 = Date.now();
+if (squint_core.truth_((() => {
+const and__23718__auto__39 = window._lastYKey;
+if (squint_core.truth_(and__23718__auto__39)) {
+return ((now38 - window._lastYKey) < 500)} else {
+return and__23718__auto__39};
+
+})())) {
+yank_verse_BANG_();
+window._lastYKey = 0} else {
+window._lastYKey = now38}} else {
 if ((key3 === "g")) {
 e.preventDefault();
-const now37 = Date.now();
-const temp__23182__auto__38 = window._lastGKey;
-if (squint_core.truth_(temp__23182__auto__38)) {
-const last_g39 = temp__23182__auto__38;
-if (((now37 - last_g39) < 500)) {
+const now40 = Date.now();
+const temp__23182__auto__41 = window._lastGKey;
+if (squint_core.truth_(temp__23182__auto__41)) {
+const last_g42 = temp__23182__auto__41;
+if (((now40 - last_g42) < 500)) {
 goto_top_BANG_()};
 window._lastGKey = 0} else {
-window._lastGKey = now37}} else {
+window._lastGKey = now40}} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__40 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__40)) {
+const and__23718__auto__43 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__43)) {
 return (key3 === "d")} else {
-return and__23718__auto__40};
+return and__23718__auto__43};
 
 })())) {
 e.preventDefault();
 scroll_half_down_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__41 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__41)) {
+const and__23718__auto__44 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__44)) {
 return (key3 === "u")} else {
-return and__23718__auto__41};
+return and__23718__auto__44};
 
 })())) {
 e.preventDefault();
 scroll_half_up_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__42 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__42)) {
+const and__23718__auto__45 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__45)) {
 return (key3 === "f")} else {
-return and__23718__auto__42};
+return and__23718__auto__45};
 
 })())) {
 e.preventDefault();
 scroll_full_down_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__43 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__43)) {
+const and__23718__auto__46 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__46)) {
 return (key3 === "b")} else {
-return and__23718__auto__43};
+return and__23718__auto__46};
 
 })())) {
 e.preventDefault();
 scroll_full_up_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__44 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__44)) {
+const and__23718__auto__47 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__47)) {
 return (key3 === "=")} else {
-return and__23718__auto__44};
+return and__23718__auto__47};
 
 })())) {
 e.preventDefault();
 change_font_size_BANG_(2)} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__45 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__45)) {
+const and__23718__auto__48 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__48)) {
 return (key3 === "-")} else {
-return and__23718__auto__45};
+return and__23718__auto__48};
 
 })())) {
 e.preventDefault();
@@ -928,44 +1070,44 @@ change_font_size_BANG_(-2)} else {
 if ((key3 === "Escape")) {
 e.preventDefault();
 clear_search_BANG_();
-const input46 = document.getElementById("search-input");
-if (squint_core.truth_(input46)) {
-input46.blur()}} else {
+const input49 = document.getElementById("search-input");
+if (squint_core.truth_(input49)) {
+input49.blur()}} else {
 if ((key3 === "v")) {
-const temp__23263__auto__47 = window._numberPrefix;
-if (squint_core.truth_(temp__23263__auto__47)) {
-const np48 = temp__23263__auto__47;
-if (((Date.now() - np48.ts) < 700)) {
+const temp__23263__auto__50 = window._numberPrefix;
+if (squint_core.truth_(temp__23263__auto__50)) {
+const np51 = temp__23263__auto__50;
+if (((Date.now() - np51.ts) < 700)) {
 e.preventDefault();
-const vnum49 = parseInt(np48.digits, 10);
-if ((vnum49 >= 1)) {
-goto_verse_num_BANG_(vnum49)};
+const vnum52 = parseInt(np51.digits, 10);
+if ((vnum52 >= 1)) {
+goto_verse_num_BANG_(vnum52)};
 window._numberPrefix = null}}} else {
 if (squint_core.truth_(squint_core.re_matches(/[0-9]/, key3))) {
 e.preventDefault();
-const now50 = Date.now();
+const now53 = Date.now();
 if (squint_core.truth_(window._numberPrefix)) {
-const map__5152 = window._numberPrefix;
-const digits53 = squint_core.get(map__5152, "digits");
-const ts54 = squint_core.get(map__5152, "ts");
-if (((now50 - ts54) < 700)) {
-window._numberPrefix = ({"digits": `${digits53??''}${key3??''}`, "ts": now50})} else {
-window._numberPrefix = ({"digits": key3, "ts": now50})}} else {
-window._numberPrefix = ({"digits": key3, "ts": now50})};
+const map__5455 = window._numberPrefix;
+const digits56 = squint_core.get(map__5455, "digits");
+const ts57 = squint_core.get(map__5455, "ts");
+if (((now53 - ts57) < 700)) {
+window._numberPrefix = ({"digits": `${digits56??''}${key3??''}`, "ts": now53})} else {
+window._numberPrefix = ({"digits": key3, "ts": now53})}} else {
+window._numberPrefix = ({"digits": key3, "ts": now53})};
 setTimeout((function () {
-const temp__23263__auto__55 = window._numberPrefix;
-if (squint_core.truth_(temp__23263__auto__55)) {
-const np56 = temp__23263__auto__55;
-if (squint_core._EQ_(np56.ts, now50)) {
-const ch57 = parseInt(np56.digits, 10);
-if (squint_core.truth_(((ch57 >= 1) && (ch57 <= get_chapter_count(squint_core.get(squint_core.deref(app_state), "book")))))) {
-goto_chapter_BANG_(ch57)};
+const temp__23263__auto__58 = window._numberPrefix;
+if (squint_core.truth_(temp__23263__auto__58)) {
+const np59 = temp__23263__auto__58;
+if (squint_core._EQ_(np59.ts, now53)) {
+const ch60 = parseInt(np59.digits, 10);
+if (squint_core.truth_(((ch60 >= 1) && (ch60 <= get_chapter_count(squint_core.get(squint_core.deref(app_state), "book")))))) {
+goto_chapter_BANG_(ch60)};
 return window._numberPrefix = null;
 };
 };
 
 }), 700)} else {
-}}}}}}}}}}}}}}}}}}}}}}}}}};
+}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}};
 return null;
 };
 
@@ -1021,23 +1163,7 @@ return prev_chapter_BANG_()};
 }), ({"passive": true}));
 load_highlights_BANG_();
 load_settings_BANG_();
-bible_db.settings.get("lastBook").then((function (rowB) {
-if (squint_core.truth_(rowB)) {
-const lastBook2 = rowB.value;
-return bible_db.settings.get("lastChapter").then((function (rowC) {
-if (squint_core.truth_(rowC)) {
-const lastCh2 = parseInt(rowC.value, 10);
-if ((lastCh2 > 0) && (lastCh2 <= get_chapter_count(lastBook2))) {
-return load_chapter_BANG_(lastBook2, lastCh2);
-};
-};
-return load_chapter_BANG_("Genesis", 1);
-
-}));
-};
-return load_chapter_BANG_("Genesis", 1);
-
-}));
+load_chapter_BANG_("Genesis", 1);
 render_ui();
 squint_core.add_watch(app_state, "rerender", (function (_, _12, _13, _14) {
 return render_ui();
@@ -1046,6 +1172,6 @@ return render_ui();
 return squint_core.println("Initialized!");
 
 };
-var bible_app_obj = ({"appState": app_state, "init": init_BANG_, "loadAll": load_all_BANG_, "nextChapter": next_chapter_BANG_, "searchNext": search_next_BANG_, "gotoChapter": goto_chapter_BANG_, "loadBook": load_book_BANG_, "gotoTop": goto_top_BANG_, "searchPrev": search_prev_BANG_, "doSearch": do_search_BANG_, "clearSearch": clear_search_BANG_, "prevChapter": prev_chapter_BANG_, "gotoBottom": goto_bottom_BANG_, "nextVerse": next_verse_BANG_, "rerender": rerender_BANG_, "gotoVerseNum": goto_verse_num_BANG_, "changeFontSize": change_font_size_BANG_, "prevVerse": prev_verse_BANG_, "toggleHighlight": toggle_highlight_BANG_});
+var bible_app_obj = ({"appState": app_state, "init": init_BANG_, "loadAll": load_all_BANG_, "nextChapter": next_chapter_BANG_, "searchNext": search_next_BANG_, "gotoChapter": goto_chapter_BANG_, "loadBook": load_book_BANG_, "randomChapter": random_chapter_BANG_, "gotoTop": goto_top_BANG_, "searchPrev": search_prev_BANG_, "doSearch": do_search_BANG_, "clearSearch": clear_search_BANG_, "prevChapter": prev_chapter_BANG_, "gotoBottom": goto_bottom_BANG_, "nextVerse": next_verse_BANG_, "rerender": rerender_BANG_, "gotoVerseNum": goto_verse_num_BANG_, "changeFontSize": change_font_size_BANG_, "prevVerse": prev_verse_BANG_, "toggleHighlight": toggle_highlight_BANG_});
 window.bibleApp = bible_app_obj;
 init_BANG_();
