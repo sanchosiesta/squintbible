@@ -1090,14 +1090,16 @@ goto_top_BANG_()};
 window._lastGKey = 0} else {
 window._lastGKey = now40}} else {
 if ((key3 === "u")) {
+if (squint_core.truth_(e.ctrlKey)) {
 e.preventDefault();
-const temp__23182__auto__43 = window._lastGKey;
-if (squint_core.truth_(temp__23182__auto__43)) {
-const last_g44 = temp__23182__auto__43;
+scroll_half_up_BANG_()} else {
+const temp__23263__auto__43 = window._lastGKey;
+if (squint_core.truth_(temp__23263__auto__43)) {
+const last_g44 = temp__23263__auto__43;
+e.preventDefault();
 if (((Date.now() - last_g44) < 500)) {
 search_verse_BANG_()};
-window._lastGKey = 0} else {
-}} else {
+window._lastGKey = 0}}} else {
 if (squint_core.truth_((() => {
 const and__23718__auto__45 = e.ctrlKey;
 if (squint_core.truth_(and__23718__auto__45)) {
@@ -1110,44 +1112,35 @@ scroll_half_down_BANG_()} else {
 if (squint_core.truth_((() => {
 const and__23718__auto__46 = e.ctrlKey;
 if (squint_core.truth_(and__23718__auto__46)) {
-return (key3 === "u")} else {
-return and__23718__auto__46};
-
-})())) {
-e.preventDefault();
-scroll_half_up_BANG_()} else {
-if (squint_core.truth_((() => {
-const and__23718__auto__47 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__47)) {
 return (key3 === "f")} else {
-return and__23718__auto__47};
+return and__23718__auto__46};
 
 })())) {
 e.preventDefault();
 scroll_full_down_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__48 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__48)) {
+const and__23718__auto__47 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__47)) {
 return (key3 === "b")} else {
-return and__23718__auto__48};
+return and__23718__auto__47};
 
 })())) {
 e.preventDefault();
 scroll_full_up_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__49 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__49)) {
+const and__23718__auto__48 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__48)) {
 return (key3 === "=")} else {
-return and__23718__auto__49};
+return and__23718__auto__48};
 
 })())) {
 e.preventDefault();
 change_font_size_BANG_(2)} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__50 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__50)) {
+const and__23718__auto__49 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__49)) {
 return (key3 === "-")} else {
-return and__23718__auto__50};
+return and__23718__auto__49};
 
 })())) {
 e.preventDefault();
@@ -1155,44 +1148,44 @@ change_font_size_BANG_(-2)} else {
 if ((key3 === "Escape")) {
 e.preventDefault();
 clear_search_BANG_();
-const input51 = document.getElementById("search-input");
-if (squint_core.truth_(input51)) {
-input51.blur()}} else {
+const input50 = document.getElementById("search-input");
+if (squint_core.truth_(input50)) {
+input50.blur()}} else {
 if ((key3 === "v")) {
-const temp__23263__auto__52 = window._numberPrefix;
-if (squint_core.truth_(temp__23263__auto__52)) {
-const np53 = temp__23263__auto__52;
-if (((Date.now() - np53.ts) < 700)) {
+const temp__23263__auto__51 = window._numberPrefix;
+if (squint_core.truth_(temp__23263__auto__51)) {
+const np52 = temp__23263__auto__51;
+if (((Date.now() - np52.ts) < 700)) {
 e.preventDefault();
-const vnum54 = parseInt(np53.digits, 10);
-if ((vnum54 >= 1)) {
-goto_verse_num_BANG_(vnum54)};
+const vnum53 = parseInt(np52.digits, 10);
+if ((vnum53 >= 1)) {
+goto_verse_num_BANG_(vnum53)};
 window._numberPrefix = null}}} else {
 if (squint_core.truth_(squint_core.re_matches(/[0-9]/, key3))) {
 e.preventDefault();
-const now55 = Date.now();
+const now54 = Date.now();
 if (squint_core.truth_(window._numberPrefix)) {
-const map__5657 = window._numberPrefix;
-const digits58 = squint_core.get(map__5657, "digits");
-const ts59 = squint_core.get(map__5657, "ts");
-if (((now55 - ts59) < 700)) {
-window._numberPrefix = ({"digits": `${digits58??''}${key3??''}`, "ts": now55})} else {
-window._numberPrefix = ({"digits": key3, "ts": now55})}} else {
-window._numberPrefix = ({"digits": key3, "ts": now55})};
+const map__5556 = window._numberPrefix;
+const digits57 = squint_core.get(map__5556, "digits");
+const ts58 = squint_core.get(map__5556, "ts");
+if (((now54 - ts58) < 700)) {
+window._numberPrefix = ({"digits": `${digits57??''}${key3??''}`, "ts": now54})} else {
+window._numberPrefix = ({"digits": key3, "ts": now54})}} else {
+window._numberPrefix = ({"digits": key3, "ts": now54})};
 setTimeout((function () {
-const temp__23263__auto__60 = window._numberPrefix;
-if (squint_core.truth_(temp__23263__auto__60)) {
-const np61 = temp__23263__auto__60;
-if (squint_core._EQ_(np61.ts, now55)) {
-const ch62 = parseInt(np61.digits, 10);
-if (squint_core.truth_(((ch62 >= 1) && (ch62 <= get_chapter_count(squint_core.get(squint_core.deref(app_state), "book")))))) {
-goto_chapter_BANG_(ch62)};
+const temp__23263__auto__59 = window._numberPrefix;
+if (squint_core.truth_(temp__23263__auto__59)) {
+const np60 = temp__23263__auto__59;
+if (squint_core._EQ_(np60.ts, now54)) {
+const ch61 = parseInt(np60.digits, 10);
+if (squint_core.truth_(((ch61 >= 1) && (ch61 <= get_chapter_count(squint_core.get(squint_core.deref(app_state), "book")))))) {
+goto_chapter_BANG_(ch61)};
 return window._numberPrefix = null;
 };
 };
 
 }), 700)} else {
-}}}}}}}}}}}}}}}}}}}}}}}}}}}};
+}}}}}}}}}}}}}}}}}}}}}}}}}}};
 return null;
 };
 

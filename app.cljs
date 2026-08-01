@@ -901,18 +901,16 @@
                                 (goto-top!))
                               (set! (.-_lastGKey js/window) 0))
                             (set! (.-_lastGKey js/window) now))))
-          ;; u after g → gu: search current verse on Google
-          (= key "u") (do
-                        (.preventDefault e)
-                        (if-let [last-g (.-_lastGKey js/window)]
-                          (do
-                            (when (< (- (.now js/Date) last-g) 500)
-                              (search-verse!))
-                            (set! (.-_lastGKey js/window) 0))
-                          nil))
+          ;; u: Ctrl+u scrolls up, or after g → gu Google-searches current verse
+          (= key "u") (if (.-ctrlKey e)
+                        (do (.preventDefault e) (scroll-half-up!))
+                        (when-let [last-g (.-_lastGKey js/window)]
+                          (.preventDefault e)
+                          (when (< (- (.now js/Date) last-g) 500)
+                            (search-verse!))
+                          (set! (.-_lastGKey js/window) 0)))
           ;; Ctrl shortcuts
           (and (.-ctrlKey e) (= key "d")) (do (.preventDefault e) (scroll-half-down!))
-          (and (.-ctrlKey e) (= key "u")) (do (.preventDefault e) (scroll-half-up!))
           (and (.-ctrlKey e) (= key "f")) (do (.preventDefault e) (scroll-full-down!))
           (and (.-ctrlKey e) (= key "b")) (do (.preventDefault e) (scroll-full-up!))
           (and (.-ctrlKey e) (= key "=")) (do (.preventDefault e) (change-font-size! 2))
