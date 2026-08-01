@@ -330,26 +330,25 @@
           (swap! app-state assoc :verse idx)
           (save-verse-pos!))))))
 
-;; ── Go to top/bottom of chapter & specific verse ──
+;; ── Go to top of chapter ──
 (defn goto-top! []
   "Jump to first non-heading verse (h=0) and scroll it to center of viewport."
   (let [verses (:verses @app-state)]
     (when (seq verses)
+      ;; BUG 4 FIX: skip heading verses, go to first non-heading verse
+      ;; Use aget because verses may be raw JS objects from Dexie
+      (let [first-non-heading (first (keep-indexed #(when (zero? (aget %2 "h")) %1) verses))]
+        (goto-verse! (or first-non-heading 0))))))
 
 ;; ── Random chapter ──
 (defn random-chapter! []
-  "Navigate to a random book and chapter. Keeps same book if shift is held."
+  "Navigate to a random book and chapter."
   (let [book (nth books-list (rand-int (count books-list)))
         max-ch (get-chapter-count book)
         ch (inc (rand-int max-ch))]
     (swap! app-state assoc :book book :chapter ch :verse 0 :verses [] :search-term "" :search-results [] :search-idx -1)
     (load-chapter! book ch)
     (println "Random pick:" book ch)))
-
-      ;; BUG 4 FIX: skip heading verses, go to first non-heading verse
-      ;; Use aget because verses may be raw JS objects from Dexie
-      (let [first-non-heading (first (keep-indexed #(when (zero? (aget %2 "h")) %1) verses))]
-        (goto-verse! (or first-non-heading 0))))))
 
 (defn goto-bottom! []
   (let [verses (:verses @app-state)]
