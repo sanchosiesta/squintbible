@@ -205,11 +205,21 @@
                      (swap! app-state assoc :saved-book v)
                      (= k :last-chapter)
                      (swap! app-state assoc :saved-chapter (js/parseInt v 10)))))
+               ;; Fallback: if IndexedDB had no saved position, try localStorage
+               (when-not (:saved-book @app-state)
+                 (when-let [ls-book (try (.getItem (.-localStorage js/window) "nasb-last-book") (catch js/Error _))]
+                   (swap! app-state assoc :saved-book ls-book)))
+               (when-not (:saved-chapter @app-state)
+                 (when-let [ls-ch (try (.getItem (.-localStorage js/window) "nasb-last-chapter") (catch js/Error _))]
+                   (swap! app-state assoc :saved-chapter (js/parseInt ls-ch 10))))
                (println "Settings loaded")))))
 
 ;; ── Save a setting ──
 (defn save-setting! [k v]
-  (.put (.-settings bible-db) (clj->js {:keyName (name k) :value (str v)})))
+  (.put (.-settings bible-db) (clj->js {:keyName (name k) :value (str v)}))
+  ;; Also persist to localStorage so settings survive IndexedDB wipes (e.g. playground run-id handshake)
+  (try (.setItem (.-localStorage js/window) (str "nasb-" (name k)) (str v))
+       (catch js/Error _)))
 
 ;; ── Load verses for a given book+chapter from Dexie ──
 (defn load-chapter! [book ch]
@@ -362,9 +372,12 @@
     (println "Random pick:" book ch)))
 
 (defn goto-bottom! []
+  "Jump to last non-heading verse (h=0) and scroll it to center of viewport."
   (let [verses (:verses @app-state)]
     (when (seq verses)
-      (goto-verse! (dec (count verses))))))
+      ;; Skip heading verses, go to last non-heading verse (like goto-top! skips headings)
+      (let [last-non-heading (last (keep-indexed #(when (zero? (aget %2 "h")) %1) verses))]
+        (goto-verse! (or last-non-heading (dec (count verses))))))))
 
 (defn goto-verse-num! [verse-num]
   (let [verses (:verses @app-state)]

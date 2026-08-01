@@ -208,13 +208,50 @@ if ((k3 === "last-chapter")) {
 squint_core.swap_BANG_(app_state, squint_core.assoc, "saved-chapter", parseInt(v4, 10))} else {
 }}}
 };
+if (squint_core.truth_(squint_core.get(squint_core.deref(app_state), "saved-book"))) {
+} else {
+const temp__23263__auto__5 = (() => {
+try{
+return window.localStorage.getItem("nasb-last-book");
+}
+catch(_6){
+return null;
+}
+
+})();
+if (squint_core.truth_(temp__23263__auto__5)) {
+const ls_book7 = temp__23263__auto__5;
+squint_core.swap_BANG_(app_state, squint_core.assoc, "saved-book", ls_book7)}};
+if (squint_core.truth_(squint_core.get(squint_core.deref(app_state), "saved-chapter"))) {
+} else {
+const temp__23263__auto__8 = (() => {
+try{
+return window.localStorage.getItem("nasb-last-chapter");
+}
+catch(_9){
+return null;
+}
+
+})();
+if (squint_core.truth_(temp__23263__auto__8)) {
+const ls_ch10 = temp__23263__auto__8;
+squint_core.swap_BANG_(app_state, squint_core.assoc, "saved-chapter", parseInt(ls_ch10, 10))}};
 return squint_core.println("Settings loaded");
 
 }));
 
 };
 var save_setting_BANG_ = function (k, v) {
-return bible_db.settings.put(squint_core.clj__GT_js(({"keyName": squint_core.name(k), "value": `${v??''}`})));
+bible_db.settings.put(squint_core.clj__GT_js(({"keyName": squint_core.name(k), "value": `${v??''}`})));
+return (() => {
+try{
+return window.localStorage.setItem(`nasb-${squint_core.name(k)}`, `${v??''}`);
+}
+catch(_1){
+return null;
+}
+
+})();
 
 };
 var load_chapter_BANG_ = function (book, ch) {
@@ -421,9 +458,22 @@ return squint_core.println("Random pick:", book1, ch3);
 
 };
 var goto_bottom_BANG_ = function () {
+"Jump to last non-heading verse (h=0) and scroll it to center of viewport.";
 const verses1 = squint_core.get(squint_core.deref(app_state), "verses");
 if (squint_core.truth_(squint_core.seq(verses1))) {
-return goto_verse_BANG_((squint_core.count(verses1) - 1));
+const last_non_heading2 = squint_core.last(squint_core.keep_indexed((function (_PERCENT_1, _PERCENT_2) {
+if ((_PERCENT_2["h"] === 0)) {
+return _PERCENT_1;
+};
+
+}), verses1));
+return goto_verse_BANG_((() => {
+const or__23674__auto__3 = last_non_heading2;
+if (squint_core.truth_(or__23674__auto__3)) {
+return or__23674__auto__3} else {
+return (squint_core.count(verses1) - 1)};
+
+})());
 };
 
 };
