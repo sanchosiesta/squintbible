@@ -383,30 +383,30 @@ var goto_top_BANG_ = function () {
 "Jump to first non-heading verse (h=0) and scroll it to center of viewport.";
 const verses1 = squint_core.get(squint_core.deref(app_state), "verses");
 if (squint_core.truth_(squint_core.seq(verses1))) {
-var random_chapter_BANG_ = function () {
-"Navigate to a random book and chapter. Keeps same book if shift is held.";
-const book2 = squint_core.nth(books_list, squint_core.rand_int(squint_core.count(books_list)));
-const max_ch3 = get_chapter_count(book2);
-const ch4 = (squint_core.rand_int(max_ch3) + 1);
-squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book2, "chapter", ch4, "verse", 0, "verses", [], "search-term", "", "search-results", [], "search-idx", -1);
-load_chapter_BANG_(book2, ch4);
-return squint_core.println("Random pick:", book2, ch4);
-
-};
-const first_non_heading5 = squint_core.first(squint_core.keep_indexed((function (_PERCENT_1, _PERCENT_2) {
+const first_non_heading2 = squint_core.first(squint_core.keep_indexed((function (_PERCENT_1, _PERCENT_2) {
 if ((_PERCENT_2["h"] === 0)) {
 return _PERCENT_1;
 };
 
 }), verses1));
 return goto_verse_BANG_((() => {
-const or__23674__auto__6 = first_non_heading5;
-if (squint_core.truth_(or__23674__auto__6)) {
-return or__23674__auto__6} else {
+const or__23674__auto__3 = first_non_heading2;
+if (squint_core.truth_(or__23674__auto__3)) {
+return or__23674__auto__3} else {
 return 0};
 
 })());
 };
+
+};
+var random_chapter_BANG_ = function () {
+"Navigate to a random book and chapter.";
+const book1 = squint_core.nth(books_list, squint_core.rand_int(squint_core.count(books_list)));
+const max_ch2 = get_chapter_count(book1);
+const ch3 = (squint_core.rand_int(max_ch2) + 1);
+squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book1, "chapter", ch3, "verse", 0, "verses", [], "search-term", "", "search-results", [], "search-idx", -1);
+load_chapter_BANG_(book1, ch3);
+return squint_core.println("Random pick:", book1, ch3);
 
 };
 var goto_bottom_BANG_ = function () {
@@ -840,12 +840,6 @@ const tag1 = e.target.tagName;
 const tag_upper2 = ((squint_core.truth_(tag1)) ? (tag1.toUpperCase()) : (null));
 if (squint_core.not(squint_core.contains_QMARK_((new Set (["INPUT", "TEXTAREA", "SELECT"])), tag_upper2))) {
 const key3 = e.key;
-if ((key3 === "t")) {
-e.preventDefault();
-goto_top_BANG_()} else {
-if ((key3 === "b") && !(window._lastZKey && ((Date.now() - window._lastZKey) < 500))) {
-e.preventDefault();
-goto_bottom_BANG_()} else {
 if ((key3 === "j")) {
 e.preventDefault();
 next_verse_BANG_()} else {
@@ -927,7 +921,10 @@ return and__23718__auto__17};
 })())) ? (squint_core.get(squint_core.nth(verses15, v14), "v")) : (null));
 const el18 = ((squint_core.truth_(verse_num16)) ? (document.getElementById(`v${verse_num16??''}`)) : (null));
 if (squint_core.truth_(el18)) {
-el18.scrollIntoView(({"behavior": "instant", "block": "center"}))}};
+requestAnimationFrame((function () {
+return el18.scrollIntoView(({"behavior": "instant", "block": "center"}));
+
+}))}};
 window._lastZKey = 0} else {
 window._lastZKey = now11;
 setTimeout((function () {
@@ -943,7 +940,10 @@ return and__23718__auto__22};
 })())) ? (squint_core.get(squint_core.nth(verses20, v19), "v")) : (null));
 const el23 = ((squint_core.truth_(verse_num21)) ? (document.getElementById(`v${verse_num21??''}`)) : (null));
 if (squint_core.truth_(el23)) {
-el23.scrollIntoView(({"behavior": "instant", "block": "start"}))};
+requestAnimationFrame((function () {
+return el23.scrollIntoView(({"behavior": "instant", "block": "start"}));
+
+}))};
 return window._lastZKey = 0;
 };
 
@@ -965,15 +965,21 @@ return and__23718__auto__29};
 })())) ? (squint_core.get(squint_core.nth(verses27, v26), "v")) : (null));
 const el30 = ((squint_core.truth_(verse_num28)) ? (document.getElementById(`v${verse_num28??''}`)) : (null));
 if (squint_core.truth_(el30)) {
-el30.scrollIntoView(({"behavior": "instant", "block": "start"}))};
+requestAnimationFrame((function () {
+return el30.scrollIntoView(({"behavior": "instant", "block": "start"}));
+
+}))};
 window._lastZKey = 0;
-true}} else {
+true} else {
+window._lastZKey = 0;
+e.preventDefault();
+goto_top_BANG_()}} else {
 e.preventDefault();
 goto_top_BANG_()}} else {
 if ((key3 === "b")) {
-const temp__23263__auto__31 = window._lastZKey;
-if (squint_core.truth_(temp__23263__auto__31)) {
-const last_z32 = temp__23263__auto__31;
+const temp__23182__auto__31 = window._lastZKey;
+if (squint_core.truth_(temp__23182__auto__31)) {
+const last_z32 = temp__23182__auto__31;
 if (((Date.now() - last_z32) < 500)) {
 e.preventDefault();
 const v33 = squint_core.get(squint_core.deref(app_state), "verse");
@@ -987,9 +993,17 @@ return and__23718__auto__36};
 })())) ? (squint_core.get(squint_core.nth(verses34, v33), "v")) : (null));
 const el37 = ((squint_core.truth_(verse_num35)) ? (document.getElementById(`v${verse_num35??''}`)) : (null));
 if (squint_core.truth_(el37)) {
-el37.scrollIntoView(({"behavior": "instant", "block": "end"}))};
+requestAnimationFrame((function () {
+return el37.scrollIntoView(({"behavior": "instant", "block": "end"}));
+
+}))};
 window._lastZKey = 0;
-true}}} else {
+true} else {
+window._lastZKey = 0;
+e.preventDefault();
+goto_bottom_BANG_()}} else {
+e.preventDefault();
+goto_bottom_BANG_()}} else {
 if ((key3 === "y")) {
 e.preventDefault();
 const now38 = Date.now();
@@ -1107,7 +1121,7 @@ return window._numberPrefix = null;
 };
 
 }), 700)} else {
-}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}};
+}}}}}}}}}}}}}}}}}}}}}}}}}}};
 return null;
 };
 

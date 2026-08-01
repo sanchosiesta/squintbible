@@ -803,7 +803,8 @@
                                       verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
                                                   (:v (nth verses v)))
                                       el (when verse-num (.getElementById js/document (str "v" verse-num)))]
-                                  (when el (.scrollIntoView el #js {:behavior "instant" :block "center"}))))
+                                  (when el (js/requestAnimationFrame
+                                             (fn [] (.scrollIntoView el #js {:behavior "instant" :block "center"}))))))
                               (set! (.-_lastZKey js/window) 0))
                             ;; First 'z': start timer; default single-z = zt (scroll to top)
                             (do
@@ -816,34 +817,48 @@
                                           verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
                                                       (:v (nth verses v)))
                                           el (when verse-num (.getElementById js/document (str "v" verse-num)))]
-                                      (when el (.scrollIntoView el #js {:behavior "instant" :block "start"})))
+                                      (when el (js/requestAnimationFrame
+                                                 (fn [] (.scrollIntoView el #js {:behavior "instant" :block "start"})))))
                                     (set! (.-_lastZKey js/window) 0)))
                                 500)))))
           ;; t - go to first verse; or zt: scroll current verse to top
           (= key "t") (if-let [last-z (.-_lastZKey js/window)]
-                        (when (< (- (.now js/Date) last-z) 500)
-                          (.preventDefault e)
-                          (let [v (:verse @app-state)
-                                verses (:verses @app-state)
-                                verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
-                                            (:v (nth verses v)))
-                                el (when verse-num (.getElementById js/document (str "v" verse-num)))]
-                            (when el (.scrollIntoView el #js {:behavior "instant" :block "start"})))
-                          (set! (.-_lastZKey js/window) 0)
-                          true)
+                        (if (< (- (.now js/Date) last-z) 500)
+                          (do
+                            (.preventDefault e)
+                            (let [v (:verse @app-state)
+                                  verses (:verses @app-state)
+                                  verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
+                                              (:v (nth verses v)))
+                                  el (when verse-num (.getElementById js/document (str "v" verse-num)))]
+                              (when el (js/requestAnimationFrame
+                                         (fn [] (.scrollIntoView el #js {:behavior "instant" :block "start"})))))
+                            (set! (.-_lastZKey js/window) 0)
+                            true)
+                          ;; stale z-prefix: clear it and fall through to standalone goto-top!
+                          (do (set! (.-_lastZKey js/window) 0)
+                              (.preventDefault e)
+                              (goto-top!)))
                         (do (.preventDefault e) (goto-top!)))
-          ;; b after z → zb: scroll current verse to bottom
-          (= key "b") (when-let [last-z (.-_lastZKey js/window)]
-                        (when (< (- (.now js/Date) last-z) 500)
-                          (.preventDefault e)
-                          (let [v (:verse @app-state)
-                                verses (:verses @app-state)
-                                verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
-                                            (:v (nth verses v)))
-                                el (when verse-num (.getElementById js/document (str "v" verse-num)))]
-                            (when el (.scrollIntoView el #js {:behavior "instant" :block "end"})))
-                          (set! (.-_lastZKey js/window) 0)
-                          true))
+          ;; b after z → zb: scroll current verse to bottom; standalone b → last verse
+          (= key "b") (if-let [last-z (.-_lastZKey js/window)]
+                        (if (< (- (.now js/Date) last-z) 500)
+                          (do
+                            (.preventDefault e)
+                            (let [v (:verse @app-state)
+                                  verses (:verses @app-state)
+                                  verse-num (when (and (seq verses) (>= v 0) (< v (count verses)))
+                                              (:v (nth verses v)))
+                                  el (when verse-num (.getElementById js/document (str "v" verse-num)))]
+                              (when el (js/requestAnimationFrame
+                                         (fn [] (.scrollIntoView el #js {:behavior "instant" :block "end"})))))
+                            (set! (.-_lastZKey js/window) 0)
+                            true)
+                          ;; stale z-prefix: clear it and fall through to standalone goto-bottom!
+                          (do (set! (.-_lastZKey js/window) 0)
+                              (.preventDefault e)
+                              (goto-bottom!)))
+                        (do (.preventDefault e) (goto-bottom!)))
           ;; y - yy yank verse (double-tap y)
           (= key "y") (do
                         (.preventDefault e)
