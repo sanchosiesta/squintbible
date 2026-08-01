@@ -467,13 +467,14 @@ return _PERCENT_1;
 };
 
 }), verses1));
-return goto_verse_BANG_((() => {
+goto_verse_BANG_((() => {
 const or__23674__auto__3 = last_non_heading2;
 if (squint_core.truth_(or__23674__auto__3)) {
 return or__23674__auto__3} else {
 return (squint_core.count(verses1) - 1)};
 
 })());
+return save_verse_pos_BANG_();
 };
 
 };
@@ -1088,56 +1089,65 @@ if (((now40 - last_g42) < 500)) {
 goto_top_BANG_()};
 window._lastGKey = 0} else {
 window._lastGKey = now40}} else {
+if ((key3 === "u")) {
+e.preventDefault();
+const temp__23182__auto__43 = window._lastGKey;
+if (squint_core.truth_(temp__23182__auto__43)) {
+const last_g44 = temp__23182__auto__43;
+if (((Date.now() - last_g44) < 500)) {
+search_verse_BANG_()};
+window._lastGKey = 0} else {
+}} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__43 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__43)) {
+const and__23718__auto__45 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__45)) {
 return (key3 === "d")} else {
-return and__23718__auto__43};
+return and__23718__auto__45};
 
 })())) {
 e.preventDefault();
 scroll_half_down_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__44 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__44)) {
+const and__23718__auto__46 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__46)) {
 return (key3 === "u")} else {
-return and__23718__auto__44};
+return and__23718__auto__46};
 
 })())) {
 e.preventDefault();
 scroll_half_up_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__45 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__45)) {
+const and__23718__auto__47 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__47)) {
 return (key3 === "f")} else {
-return and__23718__auto__45};
+return and__23718__auto__47};
 
 })())) {
 e.preventDefault();
 scroll_full_down_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__46 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__46)) {
+const and__23718__auto__48 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__48)) {
 return (key3 === "b")} else {
-return and__23718__auto__46};
+return and__23718__auto__48};
 
 })())) {
 e.preventDefault();
 scroll_full_up_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__47 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__47)) {
+const and__23718__auto__49 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__49)) {
 return (key3 === "=")} else {
-return and__23718__auto__47};
+return and__23718__auto__49};
 
 })())) {
 e.preventDefault();
 change_font_size_BANG_(2)} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__48 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__48)) {
+const and__23718__auto__50 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__50)) {
 return (key3 === "-")} else {
-return and__23718__auto__48};
+return and__23718__auto__50};
 
 })())) {
 e.preventDefault();
@@ -1145,44 +1155,44 @@ change_font_size_BANG_(-2)} else {
 if ((key3 === "Escape")) {
 e.preventDefault();
 clear_search_BANG_();
-const input49 = document.getElementById("search-input");
-if (squint_core.truth_(input49)) {
-input49.blur()}} else {
+const input51 = document.getElementById("search-input");
+if (squint_core.truth_(input51)) {
+input51.blur()}} else {
 if ((key3 === "v")) {
-const temp__23263__auto__50 = window._numberPrefix;
-if (squint_core.truth_(temp__23263__auto__50)) {
-const np51 = temp__23263__auto__50;
-if (((Date.now() - np51.ts) < 700)) {
+const temp__23263__auto__52 = window._numberPrefix;
+if (squint_core.truth_(temp__23263__auto__52)) {
+const np53 = temp__23263__auto__52;
+if (((Date.now() - np53.ts) < 700)) {
 e.preventDefault();
-const vnum52 = parseInt(np51.digits, 10);
-if ((vnum52 >= 1)) {
-goto_verse_num_BANG_(vnum52)};
+const vnum54 = parseInt(np53.digits, 10);
+if ((vnum54 >= 1)) {
+goto_verse_num_BANG_(vnum54)};
 window._numberPrefix = null}}} else {
 if (squint_core.truth_(squint_core.re_matches(/[0-9]/, key3))) {
 e.preventDefault();
-const now53 = Date.now();
+const now55 = Date.now();
 if (squint_core.truth_(window._numberPrefix)) {
-const map__5455 = window._numberPrefix;
-const digits56 = squint_core.get(map__5455, "digits");
-const ts57 = squint_core.get(map__5455, "ts");
-if (((now53 - ts57) < 700)) {
-window._numberPrefix = ({"digits": `${digits56??''}${key3??''}`, "ts": now53})} else {
-window._numberPrefix = ({"digits": key3, "ts": now53})}} else {
-window._numberPrefix = ({"digits": key3, "ts": now53})};
+const map__5657 = window._numberPrefix;
+const digits58 = squint_core.get(map__5657, "digits");
+const ts59 = squint_core.get(map__5657, "ts");
+if (((now55 - ts59) < 700)) {
+window._numberPrefix = ({"digits": `${digits58??''}${key3??''}`, "ts": now55})} else {
+window._numberPrefix = ({"digits": key3, "ts": now55})}} else {
+window._numberPrefix = ({"digits": key3, "ts": now55})};
 setTimeout((function () {
-const temp__23263__auto__58 = window._numberPrefix;
-if (squint_core.truth_(temp__23263__auto__58)) {
-const np59 = temp__23263__auto__58;
-if (squint_core._EQ_(np59.ts, now53)) {
-const ch60 = parseInt(np59.digits, 10);
-if (squint_core.truth_(((ch60 >= 1) && (ch60 <= get_chapter_count(squint_core.get(squint_core.deref(app_state), "book")))))) {
-goto_chapter_BANG_(ch60)};
+const temp__23263__auto__60 = window._numberPrefix;
+if (squint_core.truth_(temp__23263__auto__60)) {
+const np61 = temp__23263__auto__60;
+if (squint_core._EQ_(np61.ts, now55)) {
+const ch62 = parseInt(np61.digits, 10);
+if (squint_core.truth_(((ch62 >= 1) && (ch62 <= get_chapter_count(squint_core.get(squint_core.deref(app_state), "book")))))) {
+goto_chapter_BANG_(ch62)};
 return window._numberPrefix = null;
 };
 };
 
 }), 700)} else {
-}}}}}}}}}}}}}}}}}}}}}}}}}}};
+}}}}}}}}}}}}}}}}}}}}}}}}}}}};
 return null;
 };
 
@@ -1236,38 +1246,37 @@ return prev_chapter_BANG_()};
 };
 
 }), ({"passive": true}));
-load_highlights_BANG_();
-load_settings_BANG_().then((function () {
-const map__1213 = squint_core.deref(app_state);
-const saved_book14 = squint_core.get(map__1213, "saved-book");
-const saved_chapter15 = squint_core.get(map__1213, "saved-chapter");
-const book16 = ((squint_core.truth_((() => {
-const and__23718__auto__17 = saved_book14;
-if (squint_core.truth_(and__23718__auto__17)) {
-return squint_core.contains_QMARK_(chapter_counts, saved_book14)} else {
-return and__23718__auto__17};
-
-})())) ? (saved_book14) : ("Genesis"));
-const chapter18 = ((squint_core.truth_((() => {
-const and__23718__auto__19 = saved_chapter15;
-if (squint_core.truth_(and__23718__auto__19)) {
-return ((saved_chapter15 >= 1) && (saved_chapter15 <= get_chapter_count(book16)))} else {
-return and__23718__auto__19};
-
-})())) ? (saved_chapter15) : (1));
-squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book16, "chapter", chapter18);
-load_chapter_BANG_(book16, chapter18);
-render_ui();
-return squint_core.println("Restored last position:", book16, "chapter", chapter18);
-
-})).catch((function (err) {
-console.error("Failed to restore last position, loading Genesis 1", err);
-load_chapter_BANG_("Genesis", 1);
+squint_core.add_watch(app_state, "rerender", (function (_, _12, _13, _14) {
 return render_ui();
 
 }));
-squint_core.add_watch(app_state, "rerender", (function (_, _20, _21, _22) {
-return render_ui();
+render_ui();
+load_highlights_BANG_();
+load_settings_BANG_().then((function () {
+const map__1516 = squint_core.deref(app_state);
+const saved_book17 = squint_core.get(map__1516, "saved-book");
+const saved_chapter18 = squint_core.get(map__1516, "saved-chapter");
+const book19 = ((squint_core.truth_((() => {
+const and__23718__auto__20 = saved_book17;
+if (squint_core.truth_(and__23718__auto__20)) {
+return squint_core.contains_QMARK_(chapter_counts, saved_book17)} else {
+return and__23718__auto__20};
+
+})())) ? (saved_book17) : ("Genesis"));
+const chapter21 = ((squint_core.truth_((() => {
+const and__23718__auto__22 = saved_chapter18;
+if (squint_core.truth_(and__23718__auto__22)) {
+return ((saved_chapter18 >= 1) && (saved_chapter18 <= get_chapter_count(book19)))} else {
+return and__23718__auto__22};
+
+})())) ? (saved_chapter18) : (1));
+squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book19, "chapter", chapter21);
+load_chapter_BANG_(book19, chapter21);
+return squint_core.println("Restored last position:", book19, "chapter", chapter21);
+
+})).catch((function (err) {
+console.error("Failed to restore last position, loading Genesis 1", err);
+return load_chapter_BANG_("Genesis", 1);
 
 }));
 return squint_core.println("Initialized!");

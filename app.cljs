@@ -377,7 +377,8 @@
     (when (seq verses)
       ;; Skip heading verses, go to last non-heading verse (like goto-top! skips headings)
       (let [last-non-heading (last (keep-indexed #(when (zero? (aget %2 "h")) %1) verses))]
-        (goto-verse! (or last-non-heading (dec (count verses))))))))
+        (goto-verse! (or last-non-heading (dec (count verses))))
+        (save-verse-pos!)))))
 
 (defn goto-verse-num! [verse-num]
   (let [verses (:verses @app-state)]
@@ -900,6 +901,15 @@
                                 (goto-top!))
                               (set! (.-_lastGKey js/window) 0))
                             (set! (.-_lastGKey js/window) now))))
+          ;; u after g → gu: search current verse on Google
+          (= key "u") (do
+                        (.preventDefault e)
+                        (if-let [last-g (.-_lastGKey js/window)]
+                          (do
+                            (when (< (- (.now js/Date) last-g) 500)
+                              (search-verse!))
+                            (set! (.-_lastGKey js/window) 0))
+                          nil))
           ;; Ctrl shortcuts
           (and (.-ctrlKey e) (= key "d")) (do (.preventDefault e) (scroll-half-down!))
           (and (.-ctrlKey e) (= key "u")) (do (.preventDefault e) (scroll-half-up!))
@@ -972,6 +982,10 @@
                 (next-chapter!)
                 (prev-chapter!))))))
       #js{:passive true}))
+  ;; Add watch for auto-rerender FIRST so UI renders immediately
+  (add-watch app-state :rerender (fn [_ _ _ _] (render-ui)))
+  ;; Render UI immediately with Genesis 1 (will be replaced once settings load)
+  (render-ui)
   ;; Load highlights
   (load-highlights!)
   ;; Load settings, then restore the last book/chapter the user was reading
@@ -988,14 +1002,10 @@
                               1)]
                  (swap! app-state assoc :book book :chapter chapter)
                  (load-chapter! book chapter)
-                 (render-ui)
                  (println "Restored last position:" book "chapter" chapter))))
       (.catch (fn [err]
                 (js/console.error "Failed to restore last position, loading Genesis 1" err)
-                (load-chapter! "Genesis" 1)
-                (render-ui))))
-  ;; Add watch for auto-rerender
-  (add-watch app-state :rerender (fn [_ _ _ _] (render-ui)))
+                (load-chapter! "Genesis" 1))))
   (println "Initialized!"))
 
 ;; ── Export to window.bibleApp ──
