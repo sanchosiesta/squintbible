@@ -201,7 +201,12 @@ const row2 = G__1;
 const k3 = squint_core.keyword(row2.keyName);
 const v4 = row2.value;
 if ((k3 === "font-size")) {
-squint_core.swap_BANG_(app_state, squint_core.assoc, "font-size", parseInt(v4, 10))}
+squint_core.swap_BANG_(app_state, squint_core.assoc, "font-size", parseInt(v4, 10))} else {
+if ((k3 === "last-book")) {
+squint_core.swap_BANG_(app_state, squint_core.assoc, "saved-book", v4)} else {
+if ((k3 === "last-chapter")) {
+squint_core.swap_BANG_(app_state, squint_core.assoc, "saved-chapter", parseInt(v4, 10))} else {
+}}}
 };
 return squint_core.println("Settings loaded");
 
@@ -282,6 +287,8 @@ const book1 = squint_core.get(squint_core.deref(app_state), "book");
 const max_ch2 = get_chapter_count(book1);
 if (squint_core.truth_(((ch >= 1) && (ch <= max_ch2)))) {
 squint_core.swap_BANG_(app_state, squint_core.assoc, "chapter", ch, "verse", 0, "verses", [], "search-term", "", "search-results", [], "search-idx", -1);
+save_setting_BANG_("last-book", book1);
+save_setting_BANG_("last-chapter", `${ch??''}`);
 return load_chapter_BANG_(book1, ch);
 };
 
@@ -290,6 +297,8 @@ var goto_book_BANG_ = function (book) {
 "Jump to a specific book at chapter 1. Resets search and verse position.";
 if (squint_core.truth_(squint_core.contains_QMARK_(chapter_counts, book))) {
 squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book, "chapter", 1, "verse", 0, "verses", [], "search-term", "", "search-results", [], "search-idx", -1);
+save_setting_BANG_("last-book", book);
+save_setting_BANG_("last-chapter", "1");
 load_chapter_BANG_(book, 1);
 return squint_core.println("Switched to", book);
 };
@@ -405,6 +414,8 @@ const book1 = squint_core.nth(books_list, squint_core.rand_int(squint_core.count
 const max_ch2 = get_chapter_count(book1);
 const ch3 = (squint_core.rand_int(max_ch2) + 1);
 squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book1, "chapter", ch3, "verse", 0, "verses", [], "search-term", "", "search-results", [], "search-idx", -1);
+save_setting_BANG_("last-book", book1);
+save_setting_BANG_("last-chapter", `${ch3}`);
 load_chapter_BANG_(book1, ch3);
 return squint_core.println("Random pick:", book1, ch3);
 
@@ -1176,10 +1187,36 @@ return prev_chapter_BANG_()};
 
 }), ({"passive": true}));
 load_highlights_BANG_();
-load_settings_BANG_();
-load_chapter_BANG_("Genesis", 1);
+load_settings_BANG_().then((function () {
+const map__1213 = squint_core.deref(app_state);
+const saved_book14 = squint_core.get(map__1213, "saved-book");
+const saved_chapter15 = squint_core.get(map__1213, "saved-chapter");
+const book16 = ((squint_core.truth_((() => {
+const and__23718__auto__17 = saved_book14;
+if (squint_core.truth_(and__23718__auto__17)) {
+return squint_core.contains_QMARK_(chapter_counts, saved_book14)} else {
+return and__23718__auto__17};
+
+})())) ? (saved_book14) : ("Genesis"));
+const chapter18 = ((squint_core.truth_((() => {
+const and__23718__auto__19 = saved_chapter15;
+if (squint_core.truth_(and__23718__auto__19)) {
+return ((saved_chapter15 >= 1) && (saved_chapter15 <= get_chapter_count(book16)))} else {
+return and__23718__auto__19};
+
+})())) ? (saved_chapter15) : (1));
+squint_core.swap_BANG_(app_state, squint_core.assoc, "book", book16, "chapter", chapter18);
+load_chapter_BANG_(book16, chapter18);
 render_ui();
-squint_core.add_watch(app_state, "rerender", (function (_, _12, _13, _14) {
+return squint_core.println("Restored last position:", book16, "chapter", chapter18);
+
+})).catch((function (err) {
+console.error("Failed to restore last position, loading Genesis 1", err);
+load_chapter_BANG_("Genesis", 1);
+return render_ui();
+
+}));
+squint_core.add_watch(app_state, "rerender", (function (_, _20, _21, _22) {
 return render_ui();
 
 }));

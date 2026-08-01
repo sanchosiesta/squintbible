@@ -198,8 +198,13 @@
                (doseq [row rows]
                  (let [k (keyword (.-keyName row))
                        v (.-value row)]
-                   (when (= k :font-size)
-                     (swap! app-state assoc :font-size (js/parseInt v 10)))))
+                   (cond
+                     (= k :font-size)
+                     (swap! app-state assoc :font-size (js/parseInt v 10))
+                     (= k :last-book)
+                     (swap! app-state assoc :saved-book v)
+                     (= k :last-chapter)
+                     (swap! app-state assoc :saved-chapter (js/parseInt v 10)))))
                (println "Settings loaded")))))
 
 ;; ── Save a setting ──
@@ -259,6 +264,8 @@
         max-ch (get-chapter-count book)]
     (when (and (>= ch 1) (<= ch max-ch))
       (swap! app-state assoc :chapter ch :verse 0 :verses [] :search-term "" :search-results [] :search-idx -1)
+      (save-setting! :last-book book)
+      (save-setting! :last-chapter (str ch))
       (load-chapter! book ch))))
 
 ;; ── Goto book ──
@@ -266,6 +273,8 @@
   "Jump to a specific book at chapter 1. Resets search and verse position."
   (when (contains? chapter-counts book)
     (swap! app-state assoc :book book :chapter 1 :verse 0 :verses [] :search-term "" :search-results [] :search-idx -1)
+    (save-setting! :last-book book)
+    (save-setting! :last-chapter "1")
     (load-chapter! book 1)
     (println "Switched to" book)))
 
@@ -347,6 +356,8 @@
         max-ch (get-chapter-count book)
         ch (inc (rand-int max-ch))]
     (swap! app-state assoc :book book :chapter ch :verse 0 :verses [] :search-term "" :search-results [] :search-idx -1)
+    (save-setting! :last-book book)
+    (save-setting! :last-chapter (str ch))
     (load-chapter! book ch)
     (println "Random pick:" book ch)))
 
@@ -950,12 +961,26 @@
       #js{:passive true}))
   ;; Load highlights
   (load-highlights!)
-  ;; Load settings
-  (load-settings!)
-  ;; Load Genesis 1
-  (load-chapter! "Genesis" 1)
-  ;; Render
-  (render-ui)
+  ;; Load settings, then restore the last book/chapter the user was reading
+  ;; (falls back to Genesis 1 if no saved position exists).
+  (-> (load-settings!)
+      (.then (fn []
+               (let [{:keys [saved-book saved-chapter]} @app-state
+                     book (if (and saved-book (contains? chapter-counts saved-book))
+                            saved-book
+                            "Genesis")
+                     chapter (if (and saved-chapter (>= saved-chapter 1)
+                                      (<= saved-chapter (get-chapter-count book)))
+                              saved-chapter
+                              1)]
+                 (swap! app-state assoc :book book :chapter chapter)
+                 (load-chapter! book chapter)
+                 (render-ui)
+                 (println "Restored last position:" book "chapter" chapter))))
+      (.catch (fn [err]
+                (js/console.error "Failed to restore last position, loading Genesis 1" err)
+                (load-chapter! "Genesis" 1)
+                (render-ui))))
   ;; Add watch for auto-rerender
   (add-watch app-state :rerender (fn [_ _ _ _] (render-ui)))
   (println "Initialized!"))
