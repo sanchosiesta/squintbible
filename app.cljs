@@ -114,6 +114,19 @@
         (let [utterance (new js/SpeechSynthesisUtterance text)]
           (.speak js/speechSynthesis utterance))))))
 
+;; ── Yank verse to clipboard ──
+(defn yank-verse! []
+  (let [verses (:verses @app-state)
+        idx (:verse @app-state)
+        book (:book @app-state)
+        ch (:chapter @app-state)]
+    (when (and (seq verses) (>= idx 0) (< idx (count verses)))
+      (let [v (nth verses idx)
+            vnum (:v v)
+            text (:t v)
+            ref (str book " " ch ":" vnum)]
+        (.writeText (.-clipboard js/navigator) (str ref " - " text))))))
+
 ;; ── Helper: get book index ──
 (defn book-index [book]
   (let [idx (.indexOf books-list book)]
@@ -689,8 +702,8 @@
                                 (toggle-highlight! vnum))))))
           ;; % - toggle between current and previous verse position
           (= key "%") (do (.preventDefault e) (toggle-verse-position!))
-          ;; R - read verse aloud
-          (= key "R") (do (.preventDefault e) (read-verse!))
+          ;; R or o - read verse aloud
+          (or (= key "R") (= key "o")) (do (.preventDefault e) (read-verse!))
           ;; h - previous chapter
           (= key "h") (do (.preventDefault e) (prev-chapter!))
           ;; l - next chapter
@@ -761,6 +774,13 @@
                             (when el (.scrollIntoView el #js {:behavior "instant" :block "end"})))
                           (set! (.-_lastZKey js/window) 0)
                           true))
+          ;; y - yy yank verse (double-tap y)
+          (= key "y") (do
+                        (.preventDefault e)
+                        (let [now (.now js/Date)]
+                          (if (and (.-_lastYKey js/window) (< (- now (.-_lastYKey js/window)) 500))
+                            (do (yank-verse!) (set! (.-_lastYKey js/window) 0))
+                            (set! (.-_lastYKey js/window) now))))
           ;; g - start of gg sequence
           (= key "g") (do
                         (.preventDefault e)
