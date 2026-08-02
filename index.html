@@ -884,7 +884,7 @@
                                       el (when verse-num (.getElementById js/document (str "v" verse-num)))]
                                   (when el (js/requestAnimationFrame
                                              (fn [] (.scrollIntoView el #js {:behavior "instant" :block "center"}))))))
-                              (set! (.-_lastZKey js/window) 0))
+                              (set! (.-_lastZKey js/window) nil))
                             ;; First 'z': start timer; default single-z = zt (scroll to top)
                             (do
                               (set! (.-_lastZKey js/window) now)
@@ -898,7 +898,7 @@
                                           el (when verse-num (.getElementById js/document (str "v" verse-num)))]
                                       (when el (js/requestAnimationFrame
                                                  (fn [] (.scrollIntoView el #js {:behavior "instant" :block "start"})))))
-                                    (set! (.-_lastZKey js/window) 0)))
+                                    (set! (.-_lastZKey js/window) nil)))
                                 500)))))
           ;; t - go to first verse; or zt: scroll current verse to top
           (= key "t") (if-let [last-z (.-_lastZKey js/window)]
@@ -912,10 +912,10 @@
                                   el (when verse-num (.getElementById js/document (str "v" verse-num)))]
                               (when el (js/requestAnimationFrame
                                          (fn [] (.scrollIntoView el #js {:behavior "instant" :block "start"})))))
-                            (set! (.-_lastZKey js/window) 0)
+                            (set! (.-_lastZKey js/window) nil)
                             true)
                           ;; stale z-prefix: clear it and fall through to standalone goto-top!
-                          (do (set! (.-_lastZKey js/window) 0)
+                          (do (set! (.-_lastZKey js/window) nil)
                               (.preventDefault e)
                               (goto-top!)))
                         (do (.preventDefault e) (goto-top!)))
@@ -931,10 +931,10 @@
                                   el (when verse-num (.getElementById js/document (str "v" verse-num)))]
                               (when el (js/requestAnimationFrame
                                          (fn [] (.scrollIntoView el #js {:behavior "instant" :block "end"})))))
-                            (set! (.-_lastZKey js/window) 0)
+                            (set! (.-_lastZKey js/window) nil)
                             true)
                           ;; stale z-prefix: clear it and fall through to standalone goto-bottom!
-                          (do (set! (.-_lastZKey js/window) 0)
+                          (do (set! (.-_lastZKey js/window) nil)
                               (.preventDefault e)
                               (goto-bottom!)))
                         (do (.preventDefault e) (goto-bottom!)))
@@ -943,17 +943,24 @@
                         (.preventDefault e)
                         (let [now (.now js/Date)]
                           (if (and (.-_lastYKey js/window) (< (- now (.-_lastYKey js/window)) 500))
-                            (do (yank-verse!) (set! (.-_lastYKey js/window) 0))
+                            (do (yank-verse!) (set! (.-_lastYKey js/window) nil))
                             (set! (.-_lastYKey js/window) now))))
-          ;; g - start of gg sequence
+          ;; g - start of gg sequence (double-tap g = goto top)
           (= key "g") (do
                         (.preventDefault e)
                         (let [now (.now js/Date)]
-                          (if-let [last-g (.-_lastGKey js/window)]
-                            (do
-                              (when (< (- now last-g) 500)
-                                (goto-top!))
-                              (set! (.-_lastGKey js/window) 0))
+                          (if (.-_lastGKey js/window)
+                            (if (< (- now (.-_lastGKey js/window)) 500)
+                              ;; gg double-tap fired → goto top.
+                              ;; Set _lastGKey to a fresh timestamp (NOT nil) so a
+                              ;; subsequent 'u'/'g' within 500ms still works. Using
+                              ;; nil here would permanently lock out 'gu' after 'gg'.
+                              (do (goto-top!)
+                                  (set! (.-_lastGKey js/window) now))
+                              ;; stale g-prefix → restart sequence with a NEW
+                              ;; timestamp (NOT 0, which is truthy in squint/CLJS
+                              ;; and would cause a permanent lockout).
+                              (set! (.-_lastGKey js/window) now))
                             (set! (.-_lastGKey js/window) now))))
           ;; u: Ctrl+u scrolls up, or after g → gu Google-searches current verse
           (= key "u") (if (.-ctrlKey e)
@@ -962,7 +969,8 @@
                           (.preventDefault e)
                           (when (< (- (.now js/Date) last-g) 500)
                             (search-verse!))
-                          (set! (.-_lastGKey js/window) 0)))
+                          ;; reset to nil so next 'g' starts a fresh sequence
+                          (set! (.-_lastGKey js/window) nil)))
           ;; Ctrl shortcuts
           (and (.-ctrlKey e) (= key "d")) (do (.preventDefault e) (scroll-half-down!))
           (and (.-ctrlKey e) (= key "f")) (do (.preventDefault e) (scroll-full-down!))
