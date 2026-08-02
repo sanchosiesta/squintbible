@@ -965,181 +965,86 @@ search_prev_BANG_()} else {
 if ((key3 === "G")) {
 e.preventDefault();
 goto_bottom_BANG_()} else {
-if ((key3 === "z")) {
-e.preventDefault();
-const now11 = Date.now();
-const temp__23182__auto__12 = window._lastZKey;
-if (squint_core.truth_(temp__23182__auto__12)) {
-const last_z13 = temp__23182__auto__12;
-if (((now11 - last_z13) < 500)) {
-const v14 = squint_core.get(squint_core.deref(app_state), "verse");
-const verses15 = squint_core.get(squint_core.deref(app_state), "verses");
-const verse_num16 = ((squint_core.truth_((() => {
-const and__23718__auto__17 = squint_core.seq(verses15);
-if (squint_core.truth_(and__23718__auto__17)) {
-return ((v14 >= 0) && (v14 < squint_core.count(verses15)))} else {
-return and__23718__auto__17};
-
-})())) ? (squint_core.get(squint_core.nth(verses15, v14), "v")) : (null));
-const el18 = ((squint_core.truth_(verse_num16)) ? (document.getElementById(`v${verse_num16??''}`)) : (null));
-if (squint_core.truth_(el18)) {
-requestAnimationFrame((function () {
-return el18.scrollIntoView(({"behavior": "instant", "block": "center"}));
-
-}))}};
-window._lastZKey = null} else {
-window._lastZKey = now11;
-setTimeout((function () {
-if (squint_core._EQ_(window._lastZKey, now11)) {
-const v19 = squint_core.get(squint_core.deref(app_state), "verse");
-const verses20 = squint_core.get(squint_core.deref(app_state), "verses");
-const verse_num21 = ((squint_core.truth_((() => {
-const and__23718__auto__22 = squint_core.seq(verses20);
-if (squint_core.truth_(and__23718__auto__22)) {
-return ((v19 >= 0) && (v19 < squint_core.count(verses20)))} else {
-return and__23718__auto__22};
-
-})())) ? (squint_core.get(squint_core.nth(verses20, v19), "v")) : (null));
-const el23 = ((squint_core.truth_(verse_num21)) ? (document.getElementById(`v${verse_num21??''}`)) : (null));
-if (squint_core.truth_(el23)) {
-requestAnimationFrame((function () {
-return el23.scrollIntoView(({"behavior": "instant", "block": "start"}));
-
-}))};
-return window._lastZKey = null;
-};
-
-}), 500)}} else {
 if ((key3 === "t")) {
-const temp__23182__auto__24 = window._lastZKey;
-if (squint_core.truth_(temp__23182__auto__24)) {
-const last_z25 = temp__23182__auto__24;
-if (((Date.now() - last_z25) < 500)) {
 e.preventDefault();
-const v26 = squint_core.get(squint_core.deref(app_state), "verse");
-const verses27 = squint_core.get(squint_core.deref(app_state), "verses");
-const verse_num28 = ((squint_core.truth_((() => {
-const and__23718__auto__29 = squint_core.seq(verses27);
-if (squint_core.truth_(and__23718__auto__29)) {
-return ((v26 >= 0) && (v26 < squint_core.count(verses27)))} else {
-return and__23718__auto__29};
-
-})())) ? (squint_core.get(squint_core.nth(verses27, v26), "v")) : (null));
-const el30 = ((squint_core.truth_(verse_num28)) ? (document.getElementById(`v${verse_num28??''}`)) : (null));
-if (squint_core.truth_(el30)) {
-requestAnimationFrame((function () {
-return el30.scrollIntoView(({"behavior": "instant", "block": "start"}));
-
-}))};
-window._lastZKey = null;
-true} else {
-window._lastZKey = null;
-e.preventDefault();
-goto_top_BANG_()}} else {
-e.preventDefault();
-goto_top_BANG_()}} else {
+goto_top_BANG_()} else {
 if ((key3 === "b")) {
-const temp__23182__auto__31 = window._lastZKey;
-if (squint_core.truth_(temp__23182__auto__31)) {
-const last_z32 = temp__23182__auto__31;
-if (((Date.now() - last_z32) < 500)) {
 e.preventDefault();
-const v33 = squint_core.get(squint_core.deref(app_state), "verse");
-const verses34 = squint_core.get(squint_core.deref(app_state), "verses");
-const verse_num35 = ((squint_core.truth_((() => {
-const and__23718__auto__36 = squint_core.seq(verses34);
-if (squint_core.truth_(and__23718__auto__36)) {
-return ((v33 >= 0) && (v33 < squint_core.count(verses34)))} else {
-return and__23718__auto__36};
-
-})())) ? (squint_core.get(squint_core.nth(verses34, v33), "v")) : (null));
-const el37 = ((squint_core.truth_(verse_num35)) ? (document.getElementById(`v${verse_num35??''}`)) : (null));
-if (squint_core.truth_(el37)) {
-requestAnimationFrame((function () {
-return el37.scrollIntoView(({"behavior": "instant", "block": "end"}));
-
-}))};
-window._lastZKey = null;
-true} else {
-window._lastZKey = null;
-e.preventDefault();
-goto_bottom_BANG_()}} else {
-e.preventDefault();
-goto_bottom_BANG_()}} else {
+goto_bottom_BANG_()} else {
 if ((key3 === "y")) {
 e.preventDefault();
-const now38 = Date.now();
+const now11 = Date.now();
 if (squint_core.truth_((() => {
-const and__23718__auto__39 = window._lastYKey;
-if (squint_core.truth_(and__23718__auto__39)) {
-return ((now38 - window._lastYKey) < 500)} else {
-return and__23718__auto__39};
+const and__23718__auto__12 = window._lastYKey;
+if (squint_core.truth_(and__23718__auto__12)) {
+return ((now11 - window._lastYKey) < 500)} else {
+return and__23718__auto__12};
 
 })())) {
 yank_verse_BANG_();
 window._lastYKey = null} else {
-window._lastYKey = now38}} else {
+window._lastYKey = now11}} else {
 if ((key3 === "g")) {
 e.preventDefault();
-const now40 = Date.now();
+const now13 = Date.now();
 if (squint_core.truth_(window._lastGKey)) {
-if (((now40 - window._lastGKey) < 500)) {
+if (((now13 - window._lastGKey) < 500)) {
 goto_top_BANG_();
-window._lastGKey = now40} else {
-window._lastGKey = now40}} else {
-window._lastGKey = now40}} else {
+window._lastGKey = now13} else {
+window._lastGKey = now13}} else {
+window._lastGKey = now13}} else {
 if ((key3 === "u")) {
 if (squint_core.truth_(e.ctrlKey)) {
 e.preventDefault();
 scroll_half_up_BANG_()} else {
-const temp__23263__auto__41 = window._lastGKey;
-if (squint_core.truth_(temp__23263__auto__41)) {
-const last_g42 = temp__23263__auto__41;
+const temp__23263__auto__14 = window._lastGKey;
+if (squint_core.truth_(temp__23263__auto__14)) {
+const last_g15 = temp__23263__auto__14;
 e.preventDefault();
-if (((Date.now() - last_g42) < 500)) {
+if (((Date.now() - last_g15) < 500)) {
 search_verse_BANG_()};
 window._lastGKey = null}}} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__43 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__43)) {
+const and__23718__auto__16 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__16)) {
 return (key3 === "d")} else {
-return and__23718__auto__43};
+return and__23718__auto__16};
 
 })())) {
 e.preventDefault();
 scroll_half_down_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__44 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__44)) {
+const and__23718__auto__17 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__17)) {
 return (key3 === "f")} else {
-return and__23718__auto__44};
+return and__23718__auto__17};
 
 })())) {
 e.preventDefault();
 scroll_full_down_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__45 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__45)) {
+const and__23718__auto__18 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__18)) {
 return (key3 === "b")} else {
-return and__23718__auto__45};
+return and__23718__auto__18};
 
 })())) {
 e.preventDefault();
 scroll_full_up_BANG_()} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__46 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__46)) {
+const and__23718__auto__19 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__19)) {
 return (key3 === "=")} else {
-return and__23718__auto__46};
+return and__23718__auto__19};
 
 })())) {
 e.preventDefault();
 change_font_size_BANG_(2)} else {
 if (squint_core.truth_((() => {
-const and__23718__auto__47 = e.ctrlKey;
-if (squint_core.truth_(and__23718__auto__47)) {
+const and__23718__auto__20 = e.ctrlKey;
+if (squint_core.truth_(and__23718__auto__20)) {
 return (key3 === "-")} else {
-return and__23718__auto__47};
+return and__23718__auto__20};
 
 })())) {
 e.preventDefault();
@@ -1147,44 +1052,44 @@ change_font_size_BANG_(-2)} else {
 if ((key3 === "Escape")) {
 e.preventDefault();
 clear_search_BANG_();
-const input48 = document.getElementById("search-input");
-if (squint_core.truth_(input48)) {
-input48.blur()}} else {
+const input21 = document.getElementById("search-input");
+if (squint_core.truth_(input21)) {
+input21.blur()}} else {
 if ((key3 === "v")) {
-const temp__23263__auto__49 = window._numberPrefix;
-if (squint_core.truth_(temp__23263__auto__49)) {
-const np50 = temp__23263__auto__49;
-if (((Date.now() - np50.ts) < 700)) {
+const temp__23263__auto__22 = window._numberPrefix;
+if (squint_core.truth_(temp__23263__auto__22)) {
+const np23 = temp__23263__auto__22;
+if (((Date.now() - np23.ts) < 700)) {
 e.preventDefault();
-const vnum51 = parseInt(np50.digits, 10);
-if ((vnum51 >= 1)) {
-goto_verse_num_BANG_(vnum51)};
+const vnum24 = parseInt(np23.digits, 10);
+if ((vnum24 >= 1)) {
+goto_verse_num_BANG_(vnum24)};
 window._numberPrefix = null}}} else {
 if (squint_core.truth_(squint_core.re_matches(/[0-9]/, key3))) {
 e.preventDefault();
-const now52 = Date.now();
+const now25 = Date.now();
 if (squint_core.truth_(window._numberPrefix)) {
-const map__5354 = window._numberPrefix;
-const digits55 = squint_core.get(map__5354, "digits");
-const ts56 = squint_core.get(map__5354, "ts");
-if (((now52 - ts56) < 700)) {
-window._numberPrefix = ({"digits": `${digits55??''}${key3??''}`, "ts": now52})} else {
-window._numberPrefix = ({"digits": key3, "ts": now52})}} else {
-window._numberPrefix = ({"digits": key3, "ts": now52})};
+const map__2627 = window._numberPrefix;
+const digits28 = squint_core.get(map__2627, "digits");
+const ts29 = squint_core.get(map__2627, "ts");
+if (((now25 - ts29) < 700)) {
+window._numberPrefix = ({"digits": `${digits28??''}${key3??''}`, "ts": now25})} else {
+window._numberPrefix = ({"digits": key3, "ts": now25})}} else {
+window._numberPrefix = ({"digits": key3, "ts": now25})};
 setTimeout((function () {
-const temp__23263__auto__57 = window._numberPrefix;
-if (squint_core.truth_(temp__23263__auto__57)) {
-const np58 = temp__23263__auto__57;
-if (squint_core._EQ_(np58.ts, now52)) {
-const ch59 = parseInt(np58.digits, 10);
-if (squint_core.truth_(((ch59 >= 1) && (ch59 <= get_chapter_count(squint_core.get(squint_core.deref(app_state), "book")))))) {
-goto_chapter_BANG_(ch59)};
+const temp__23263__auto__30 = window._numberPrefix;
+if (squint_core.truth_(temp__23263__auto__30)) {
+const np31 = temp__23263__auto__30;
+if (squint_core._EQ_(np31.ts, now25)) {
+const ch32 = parseInt(np31.digits, 10);
+if (squint_core.truth_(((ch32 >= 1) && (ch32 <= get_chapter_count(squint_core.get(squint_core.deref(app_state), "book")))))) {
+goto_chapter_BANG_(ch32)};
 return window._numberPrefix = null;
 };
 };
 
 }), 700)} else {
-}}}}}}}}}}}}}}}}}}}}}}}}}}};
+}}}}}}}}}}}}}}}}}}}}}}}}}};
 return null;
 };
 
